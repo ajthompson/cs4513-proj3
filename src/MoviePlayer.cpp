@@ -32,7 +32,10 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps) {
 	long usecs;
 
 	this->fps = fps;
-	this->show_fps = show_fps; 
+	this->show_fps = show_fps;
+
+	memset(&(this->last_frame_time), 0, sizeof(this->last_frame_time));
+	gettimeofday(&(this->last_frame_time), NULL);
 
 	// calculate the interval to achieve the given fps
 	usecs = 1000000 / this->fps;
@@ -89,20 +92,49 @@ void MoviePlayer::prepTerminal() {
  * 
  * @param frame_queue The queue of frames that haven't been printed yet
  */
-void MoviePlayer::printFrame(std::queue<std::string> frame_queue) {
+void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
 	if (refresh_display && frame_queue.size() > 0) {
 		MoviePlayer::refresh_display = 0;
 
 		// reset the cursor to the top left
-		cout << "\x1B[1;1H";
+		std::cout << "\x1B[1;1H";
 
 		// print the frame
-		cout << frame_queue.pop();
+		std::cout << frame_queue->pop();
 
 		if (this->show_fps) {
-			
+			// go to the next line, and clear to the end of the terminal
+			// this will remove the previous fps value
+			cout << "\n\x1B[0K" << this->computeFPS() << " fps";
 		}
+
+		std::cout << std::flush;
 	}
 }
 
+/**
+ * Compute the instantaneous fps, and then update the stored time the frame was
+ * printed.
+ * 
+ * @return The instantaneous fps
+ */
+double MoviePlayer::computeFPS() {
+	struct timeval new_time;
+	memset(&new_time, 0, sizeof(new_time));
+	gettimeofday(&new_time, NULL);
 
+	double sec_diff = (double) (new_time.tv_sec - this->last_frame_time.tv_sec);
+	double usec_diff_sec = ((double) (new_time.tv_usec - this->last_frame_time.tv_usec)) / 1000000;
+
+	this->last_frame_time = new_time;
+
+	return 1.0 / (sec_diff + usec_diff_sec);
+}
+
+/**
+ * SIGALARM signal handler. Updates static refresh_display member to
+ * indicate that a new frame can be printed.
+ */
+static void handle_timer(int sig) {
+	MoviePlayer::refresh_display = 1;
+}

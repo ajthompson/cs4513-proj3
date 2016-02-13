@@ -1,70 +1,44 @@
-######### NOT UPDATED FOR PROGRAM 3 YET ###########
-# Just placeholder for general structure
-
 # set to use updated g++ on CCC machines, will use default location if that doesn't exist
 # AKA on my own coputers
-ifneq ("$(wildcard /usr/local/bin/gcc)","")
-GCC=/usr/local/bin/gcc
+# 
+# This was implemented due to the g++ installed in the typical /usr/bin/g++
+# directory by package managers on the WPI servers being nearly 8 years old, 
+# while a newer version is available in /usr/bin/local/g++
+ifneq ("$(wildcard /usr/local/bin/g++)","")
+GXX=/usr/local/bin/g++
 else
-GCC=/usr/bin/gcc
+GXX=/usr/bin/g++
 endif
-
-################################
-##### BEGIN TEST VARIABLES #####
-################################
-SERVER = ec2-54-191-127-23.us-west-2.compute.amazonaws.com
-PORT = 40000
-CREDENTIALS = ~/.ssh/cs4513.pem
-USERNAME = ubuntu
-NUM_ITERATIONS = 100
-
-##############################
-##### END TEST VARIABLES #####
-##############################
 
 IDIR = ./inc
 ODIR = ./obj
 SDIR = ./src
 BDIR = ./bin
-LDIR = ./log
-TDIR = ./test
 
-__SHARED_SOURCES = $(SDIR)/proj2.c
-__CLIENT_SOURCES = $(SDIR)/dsh.c
-__SERVER_SOURCES = $(SDIR)/dss.c
+__NUTELLA_SOURCES = $(SDIR)/nutella.cpp $(SDIR)/MoviePlayer.cpp
 
-CLIENT_SOURCES = $(__CLIENT_SOURCES) $(__SHARED_SOURCES)
-SERVER_SOURCES = $(__SERVER_SOURCES) $(__SHARED_SOURCES)
+NUTELLA_SOURCES = $(__NUTELLA_SOURCES)
 
-CLIENT_OBJECTS = $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(CLIENT_SOURCES))
-SERVER_OBJECTS = $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(SERVER_SOURCES))
+NUTELLA_OBJECTS = $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(NUTELLA_SOURCES))
 
-L_FLAGS = -lcrypt
+L_FLAGS = 
 
-__C_FLAGS = -Werror -Wall -Iinc -std=gnu99 -D_POSIX_C_SOURCE=199309L
-C_FLAGS = $(__C_FLAGS)
+__CXX_FLAGS = -Werror -Wall -Iinc
+CXX_FLAGS = $(__CXX_FLAGS)
 
 VPATH = $(SDIR):$(IDIR):$(ODIR)
 
 .PHONY: all
 
-all: dsh dss
+all: nutella
 
-dsh: $(CLIENT_OBJECTS)
-	$(GCC) $(C_FLAGS) -o $(BDIR)/dsh $^ $(L_FLAGS)
-
-dss: $(SERVER_OBJECTS)
-	$(GCC) $(C_FLAGS) -o $(BDIR)/dss $^ $(L_FLAGS)
+nutella: $(NUTELLA_OBJECTS)
+	$(GCC) $(CXX_FLAGS) -o $(BDIR)/dsh $^ $(L_FLAGS)
 
 $(ODIR)/%.o: %.c
-	$(GCC) $(C_FLAGS) -c $< -o $@
+	$(GCC) $(CXX_FLAGS) -c $< -o $@
 
 .PHONY: clean
 
 clean:
 	rm -f $(BDIR)/* $(ODIR)/* $(LDIR)/*
-
-.PHONY: test
-
-test: all
-	$(TDIR)/benchmark.bash $(SERVER) $(PORT) $(CREDENTIALS) $(USERNAME) $(NUM_ITERATIONS)

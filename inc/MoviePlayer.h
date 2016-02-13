@@ -16,6 +16,9 @@ class MoviePlayer {
 	unsigned long fps;
 	int show_fps;
 
+	// fps logging
+	struct timeval last_frame_time;
+
 	// indicate that we should publish a new frame
 	static volatile sig_atomic_t refresh_display;
 
@@ -30,6 +33,8 @@ public:
 
 private:
 	MoviePlayer(int fps);				// constructor
+
+	double computeFPS();
 	static void handle_timer(int sig);	// SIGALARM handler
 };
 
