@@ -4,6 +4,9 @@
  * copyright 2002
  * 
  * Basic multicast socket wrappers.
+ *
+ * Modified by Alec Thompson to not block on mrecv
+ * February 2016
  */
 
 #include <stdio.h>
@@ -36,7 +39,7 @@ int msockdestroy(int sock);
    return number of bytes sent, -1 if error. */
 int msend(int sock, char *message, int len);
 
-/* mrecv -- receive message on given mcast address. Will block.
+/* mrecv -- receive message on given mcast address.
    return bytes received, -1 if error. */
 int mrecv(int sock, char *message, int max_len);
 

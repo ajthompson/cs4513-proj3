@@ -103,7 +103,7 @@ int mrecv(int sock, char *message, int max_len) {
   }
   addrlen = sizeof(adr[sock]);
   
-  return (recvfrom(sock, message, max_len, 0, 
+  return (recvfrom(sock, message, max_len, MSG_DONTWAIT, 
 		   (struct sockaddr *) &adr[sock], &addrlen));
 }
 

@@ -7,8 +7,11 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
-#ifndef NUTELLA_PLAYER_H_
-#define NUTELLA_PLAYER_H_
+#ifndef NUTELLA_PLAYER_HPP_
+#define NUTELLA_PLAYER_HPP_
+
+#include <string>
+#include <queue>
 
 #include "MoviePlayer.h"
 
@@ -18,7 +21,8 @@ class NutellaPlayer {
 
 	MoviePlayer *mp;
 	std::queue<std::string> frame_queue;
-	std::string partial_frame;
+
+	std::string partial_frame; // leftover frame without any end delimiters
 
 public:
 	/* Constructor and Destructor */

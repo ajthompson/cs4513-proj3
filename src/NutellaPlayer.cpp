@@ -7,10 +7,11 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
+#include "errno.h"
 
 #include "proj3.h"
 
-#include "NutellaPlayer.h"
+#include "NutellaPlayer.hpp"
 
 
 NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host, 
@@ -38,7 +39,7 @@ NutellaPlayer::~NutellaPlayer() {
 }
 
 int NutellaPlayer::run() {
-	while (this->socket >= 0 && this->frame_queue.size() >= 0) {
+	while (this->socket >= 0 || this->frame_queue.size() >= 0) {
 		if (this->socket >= 0) {
 			// we are still connected with the streamer
 			receiveStream();
@@ -71,12 +72,52 @@ void NutellaPlayer::disconnect() {
 }
 
 void NutellaPlayer::sendTitle() {
-
+	ssize_t bytes_sent = send(this->socket, this->title.c_str(), this->title.size());
+	if (bytes_sent < 0)
+		perror("send()");
 }
 
 void NutellaPlayer::receiveStream() {
-	std::string temp_line, temp_buffer;
-	char buffer[1024];
+	std::string temp_frame, temp_buffer;
+	char buffer[BUFSIZE];		
+	size_t end_pos = 0, last_pos = 0;
+	ssize_t bytes_read;
 
-	ssize_t bytesRead = recv
+	bytes_read = recv(this->socket, buffer, BUFSIZE, MSG_DONTWAIT);
+
+	if (bytes_read > 0) {
+		// create a string, adding the leftovers from previous recv's
+		// that could not be parsed into frames
+		temp_buffer = partial_frame + string(buffer, bytesRead);
+		bytes_read += partial_frame.size();
+
+		// find any end delimiters
+		while (end_pos != string::npos) {
+			end_pos = temp_buffer.find("end", last_pos);
+
+			if (end_pos != string::npos) {
+				// create a new substring from last_pos to the beginning of 'end'
+				temp_frame = string(temp_buffer, last_pos, end_pos);
+
+				// add to the frame queue
+				this->frame_queue.push(temp_frame);
+
+				// update last_pos to omit 'end\n'
+				last_pos += 3;
+			} else {
+				// there are no remaining end delimiters
+				// copy the remaining to partial_frame
+				this->partial_frame = string(temp_buffer, last_pos, end_pos);
+			}
+		}
+	} else if (bytesRead == 0) {
+		// the streamer has disconnected, so the socket should be closed
+		this->disconnect();
+	} else {
+		/* An error occured, check to make sure it was EAGAIN or EWOULDBLOCK,
+		   and not something unexpected */
+		if (!(errno == EWOULDBLOCK || errno == EAGAIN)) {
+			perror("recv()");
+		}
+	}
 }

@@ -40,7 +40,7 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps) {
 	// calculate the interval to achieve the given fps
 	usecs = 1000000 / this->fps;
 
-	// set up the timer handler to handle SIGVTALARM
+	// set up the timer handler to handle SIGALARM
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = &MoviePlayer::handle_timer;
 	sigaction(SIGALARM, &sa, NULL);

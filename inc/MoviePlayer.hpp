@@ -9,8 +9,8 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
-#ifndef MOVIE_PLAYER_H_
-#define MOVIE_PLAYER_H_
+#ifndef MOVIE_PLAYER_HPP_
+#define MOVIE_PLAYER_HPP_
 
 class MoviePlayer {
 	unsigned long fps;

@@ -6,8 +6,10 @@
 # while a newer version is available in /usr/bin/local/g++
 ifneq ("$(wildcard /usr/local/bin/g++)","")
 GXX=/usr/local/bin/g++
+GCC=/usr/local/bin/gcc
 else
 GXX=/usr/bin/g++
+GCC=/usr/bin/gcc
 endif
 
 IDIR = ./inc
@@ -15,16 +17,25 @@ ODIR = ./obj
 SDIR = ./src
 BDIR = ./bin
 
-__NUTELLA_SOURCES = $(SDIR)/nutella.cpp $(SDIR)/MoviePlayer.cpp
+__NUTELLA_CXX_SOURCES = $(SDIR)/main.cpp $(SDIR)/NutellaServer.cpp $(SDIR)/NutellaStreamer.cpp $(SDIR)/NutellaPlayer.cpp $(SDIR)/MoviePlayer.cpp
 
-NUTELLA_SOURCES = $(__NUTELLA_SOURCES)
+__NUTELLA_C___SOURCES = $(SDIR)/msock.c
 
-NUTELLA_OBJECTS = $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(NUTELLA_SOURCES))
+NUTELLA_CXX_SOURCES = $(__NUTELLA_CXX_SOURCES)
+NUTELLA_C___SOURCES = $(__NUTELLA_C___SOURCES)
+
+__NUTELLA_CXX_OBJECTS = $(patsubst $(SDIR)/%.cpp,$(ODIR)/%.obj,$(NUTELLA_CXX_SOURCES))
+__NUTELLA_C___OBJECTS = $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(NUTELLA_C___SOURCES))
+
+NUTELLA_OBJECTS = $(__NUTELLA_CXX_OBJECTS) $(__NUTELLA_C___OBJECTS)
 
 L_FLAGS = 
 
 __CXX_FLAGS = -Werror -Wall -Iinc
 CXX_FLAGS = $(__CXX_FLAGS)
+
+__C_FLAGS = -Werror -Wall -Iinc
+C_FLAGS = $(__CXX_FLAGS)
 
 VPATH = $(SDIR):$(IDIR):$(ODIR)
 
@@ -33,10 +44,13 @@ VPATH = $(SDIR):$(IDIR):$(ODIR)
 all: nutella
 
 nutella: $(NUTELLA_OBJECTS)
-	$(GCC) $(CXX_FLAGS) -o $(BDIR)/dsh $^ $(L_FLAGS)
+	$(GCC) $(CXX_FLAGS) -o $(BDIR)/nutella $^ $(L_FLAGS)
+
+$(ODIR)/%.obj: %.cpp
+	$(GCC) $(CXX_FLAGS) -c $< -o $@
 
 $(ODIR)/%.o: %.c
-	$(GCC) $(CXX_FLAGS) -c $< -o $@
+	$(GCC) $(C_FLAGS) -c $< -o $@
 
 .PHONY: clean
 
