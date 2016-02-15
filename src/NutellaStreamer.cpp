@@ -104,6 +104,8 @@ NutellaStreamer::NutellaStreamer(std::string dir, int vflag)
  * Destructor
  */
 NutellaStreamer::~NutellaStreamer() {
+	if (this->vflag)
+		std::cout << "NutellaStreamer: Running destructor" << std::endl;
 	this->disconnect();
 }
 
@@ -245,6 +247,9 @@ void NutellaStreamer::streamMovie() {
 		// check if it's the end of a frame
 		if (line.compare("end")) {
 			frame += line;
+
+			if (this->vflag)
+				std::cout << "Read frame:\n" << frame << std::endl;
 
 			// send the frame
 			this->sendFrame(line);

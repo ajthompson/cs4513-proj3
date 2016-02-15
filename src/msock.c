@@ -97,10 +97,10 @@ int msend(int sock, char const *message, int len) {
 int mrecv(int sock, char *message, int max_len, int flags) {
   int addrlen;
 
-  if (!is_valid[sock]) {
-    fprintf(stderr, "sock %d not valid\n", sock);
-    return -1;
-  }
+  // if (!is_valid[sock]) {
+  //   fprintf(stderr, "sock %d not valid\n", sock);
+  //   return -1;
+  // }
   addrlen = sizeof(adr[sock]);
   
   return (recvfrom(sock, message, max_len, flags, 

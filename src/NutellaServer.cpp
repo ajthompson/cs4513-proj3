@@ -158,6 +158,11 @@ NutellaServer::NutellaServer(int argc, char **argv)
 			std::cout << " of " << DEFAULT_MCAST_RESPONSE_ADDR << std::endl;
 		}
 
+		if (this->vflag) {
+			std::cout << "NutellaServer: MCast Query Socket: " << this->q_msock << std::endl;
+			std::cout << "NutellaServer: MCast Response Socket: " << this->r_msock << std::endl;
+		}
+
 		// create a streamer
 		nstream = new NutellaStreamer(this->moviedir, this->vflag);
 	}
@@ -167,6 +172,8 @@ NutellaServer::NutellaServer(int argc, char **argv)
  * Destructor
  */
 NutellaServer::~NutellaServer() {
+	if (this->vflag)
+		std::cout << "NutellaServer: Running destructor" << std::endl;
 	msockdestroy(this->q_msock);
 	msockdestroy(this->r_msock);
 
@@ -202,6 +209,8 @@ void NutellaServer::run() {
 		pid_t pid_stream = fork();
 
 		if (pid_stream == 0) {
+			if (vflag)
+				std::cout << "NutellaServer nstream child: Calling msockdestroy: " << std::endl;
 			// child, close the multicast ports
 			msockdestroy(this->q_msock);
 			msockdestroy(this->r_msock);
@@ -249,7 +258,6 @@ int NutellaServer::handleQuery() {
 
 	// wait for a request on the socket
 	if ((bytes_recv = mrecv(this->q_msock, buffer, BUFSIZE, 0)) == -1) {
-		perror("mrecv()");
 		return -1;
 	}
 

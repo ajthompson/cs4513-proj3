@@ -16,6 +16,7 @@
 #include "MoviePlayer.hpp"
 
 class NutellaPlayer {
+	int tflag, vflag;
 	int sock;
 	std::string title;
 
@@ -26,7 +27,7 @@ class NutellaPlayer {
 
 public:
 	/* Constructor and Destructor */
-	NutellaPlayer(std::string title, std::string streamer_host, int streamer_port, unsigned long fps, int fps_flag);
+	NutellaPlayer(std::string title, std::string streamer_host, int streamer_port, unsigned long fps, int fps_flag, int tflag, int vflag);
 	~NutellaPlayer();
 
 	void run();

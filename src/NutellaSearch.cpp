@@ -72,8 +72,8 @@ NutellaSearch::NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vfl
 	}
 
 	if (this->vflag) {
-		std::cout << "MCast Query Socket: " << this->q_msock << std::endl;
-		std::cout << "MCast Response Socket: " << this->r_msock << std::endl;
+		std::cout << "NutellaSearch: MCast Query Socket: " << this->q_msock << std::endl;
+		std::cout << "NutellaSearch: MCast Response Socket: " << this->r_msock << std::endl;
 	}
 }
 
@@ -82,6 +82,8 @@ NutellaSearch::NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vfl
  */
 NutellaSearch::~NutellaSearch() {
 	// we only use the sockets inside of this class
+	if (this->vflag)
+		std::cout << "NutellaSearch: Calling destructor" << std::endl;
 	if (this->q_msock >= 0)
 		msockdestroy(this->q_msock);
 	if (this->r_msock >= 0)
@@ -150,8 +152,11 @@ void NutellaSearch::run() {
 			}
 		} while (NutellaSearch::check_mcast);
 
+		if (vflag)
+			std::cout << "NutellaSearch: Creating NutellaPlayer" << std::endl;
+
 		// create the Nutella Player
-		NutellaPlayer *np = new NutellaPlayer(title, host, atoi(port.c_str()), this->fps, this->fps_flag);
+		NutellaPlayer *np = new NutellaPlayer(title, host, atoi(port.c_str()), this->fps, this->fps_flag, this->tflag, this->vflag);
 		np->run();
 	}
 }

@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -24,8 +25,8 @@
 #include "proj3.h"
 
 NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host, 
-		int streamer_port, unsigned long fps, int fps_flag)
-		: sock(-1), mp(NULL), partial_frame("") {
+		int streamer_port, unsigned long fps, int fps_flag, int tflag, int vflag)
+		: tflag(tflag), vflag(vflag), sock(-1), mp(NULL), partial_frame("") {
 
 	/* Connect to the streamer */
 	this->connectToStreamer(streamer_host, streamer_port);
@@ -42,6 +43,8 @@ NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host,
  * Destructor
  */
 NutellaPlayer::~NutellaPlayer() {
+	if (vflag)
+		std::cout << "NutellaPlayer: Calling destructor" << std::endl;
 	if (this->sock >= 0)
 		this->disconnect();
 	delete this->mp;
@@ -69,6 +72,12 @@ void NutellaPlayer::connectToStreamer(std::string streamer_host, int streamer_po
 	if ((connect(this->sock, (struct sockaddr *) servAddrInfo.ai_addr, sizeof(servAddrInfo))) != 0) {
 		perror("connect()");
 		exit(302);
+	}
+
+	if (vflag) {
+		std::stringstream ss;
+		ss << this->sock;
+		std::cout << "NutellaPlayer: Connected to socket " << ss.str() << std::endl;
 	}
 }
 
