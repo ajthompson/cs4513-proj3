@@ -68,6 +68,7 @@ void NutellaPlayer::run() {
 
 	// reset the terminal
 	this->mp->clearAttributes();
+	this->mp->prepTerminal();
 
 	if (vflag)
 		std::cout << "NutellaPlayer: run() finished" << std::endl;
@@ -143,8 +144,10 @@ void NutellaPlayer::receiveStream() {
 				// update last_pos to omit 'end\n'
 				last_pos += 3;
 
-				if (this->vflag)
+				if (this->vflag) {
 					std::cout << "NutellaPlayer: Finished frame" << std::endl;
+					std::cout << temp_frame << std::endl;
+				}
 			} else {
 				// there are no remaining end delimiters
 				// copy the remaining to partial_frame
