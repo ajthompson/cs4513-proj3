@@ -25,6 +25,7 @@ Compiled Object files
 *.out
 *.app
 *.dat
+nutella
 
 # log files
 *.log
