@@ -44,7 +44,7 @@ NutellaServer::NutellaServer(int argc, char **argv)
 			{0, 0, 0, 0}
 		};
 
-	while ((c = getopt_long(argc, argv, "d:ptv", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "pctd:vf:sh", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 0:
 				break;
@@ -123,41 +123,43 @@ NutellaServer::NutellaServer(int argc, char **argv)
 			std::cout << "Framerate set to " << this->fps << "Hz" << std::endl;
 	}
 
-	DIR *dir = NULL;
-	struct dirent *entry;
+	if (!cflag) {
+		DIR *dir = NULL;
+		struct dirent *entry;
 
-	// open the movie directory
-	if ((dir = opendir(this->moviedir.c_str())) == NULL) {
-		perror("opendir()");
-		exit(103);
+		// open the movie directory
+		if ((dir = opendir(this->moviedir.c_str())) == NULL) {
+			perror("opendir()");
+			exit(103);
+		}
+
+		// save the base filenames of movies to a vector
+		while ((entry = readdir(dir))) {
+			// ignore directories
+			if (entry->d_type == DT_DIR)
+				continue;
+			this->titles.push_back(std::string(entry->d_name));
+		}
+
+		closedir(dir);
+
+		// sort the vector
+		std::sort(this->titles.begin(), this->titles.end());
+
+		// setup multicast sockets
+		if ((this->q_msock = msockcreate(RECV, DEFAULT_MCAST_QUERY_ADDR, DEFAULT_MCAST_QUERY_PORT)) == -1) {
+			std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_QUERY_PORT;
+			std::cout << " of " << DEFAULT_MCAST_QUERY_ADDR << std::endl;
+		}
+
+		if ((this->r_msock = msockcreate(SEND, DEFAULT_MCAST_RESPONSE_ADDR, DEFAULT_MCAST_RESPONSE_PORT)) == -1) {
+			std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_RESPONSE_PORT;
+			std::cout << " of " << DEFAULT_MCAST_RESPONSE_ADDR << std::endl;
+		}
+
+		// create a streamer
+		nstream = new NutellaStreamer(this->moviedir);
 	}
-
-	// save the base filenames of movies to a vector
-	while ((entry = readdir(dir))) {
-		// ignore directories
-		if (entry->d_type == DT_DIR)
-			continue;
-		this->titles.push_back(std::string(entry->d_name));
-	}
-
-	closedir(dir);
-
-	// sort the vector
-	std::sort(this->titles.begin(), this->titles.end());
-
-	// setup multicast sockets
-	if ((this->q_msock = msockcreate(RECV, DEFAULT_MCAST_QUERY_ADDR, DEFAULT_MCAST_QUERY_PORT)) == -1) {
-		std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_QUERY_PORT;
-		std::cout << " of " << DEFAULT_MCAST_QUERY_ADDR << std::endl;
-	}
-
-	if ((this->r_msock = msockcreate(SEND, DEFAULT_MCAST_RESPONSE_ADDR, DEFAULT_MCAST_RESPONSE_PORT)) == -1) {
-		std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_RESPONSE_PORT;
-		std::cout << " of " << DEFAULT_MCAST_RESPONSE_ADDR << std::endl;
-	}
-
-	// create a streamer
-	nstream = new NutellaStreamer(this->moviedir);
 }
 
 /**
@@ -183,7 +185,7 @@ NutellaServer::~NutellaServer() {
  */
 void NutellaServer::run() {
 	// if we aren't in passive mode, create a fork for NutellaSearch to accept input
-	if (!pflag) {
+	if (!this->pflag) {
 		pid_t pid = fork();
 
 		if (pid == 0) {		// child
@@ -194,35 +196,42 @@ void NutellaServer::run() {
 		this->pids.push_back(pid);
 	}
 
-	// fork off a streamer to handle accepting connections
-	pid_t pid_stream = fork();
+	if (!this->cflag) {
+		// fork off a streamer to handle accepting connections
+		pid_t pid_stream = fork();
 
-	if (pid_stream == 0) {
-		// child, close the multicast ports
-		msockdestroy(this->q_msock);
-		msockdestroy(this->r_msock);
+		if (pid_stream == 0) {
+			// child, close the multicast ports
+			msockdestroy(this->q_msock);
+			msockdestroy(this->r_msock);
 
-		this->nstream->run();
-	} else if (pid_stream > 0) {
-		this->pids.push_back(pid_stream);
+			this->nstream->run();
+		} else if (pid_stream > 0) {
+			this->pids.push_back(pid_stream);
 
-		// deactivate the streamer, so it will only serve to generate response messages
-		this->nstream->deactivate();
-	}
+			// deactivate the streamer, so it will only serve to generate response messages
+			this->nstream->deactivate();
+		}
 
-	while (1) {
-		handleQuery();
+		while (1) {
+			handleQuery();
 
-		// check to see if any pids have terminated
-		for (std::vector<pid_t>::iterator it = this->pids.begin(); it != this->pids.end();) {
-			if (waitpid(*it, NULL, WNOHANG) > 0) {
-				// the process whose pid we checked exited
-				it = this->pids.erase(it);
-			} else {
-				// otherwise, increment the iterator
-				++it;
+			// check to see if any pids have terminated
+			for (std::vector<pid_t>::iterator it = this->pids.begin(); it != this->pids.end();) {
+				if (waitpid(*it, NULL, WNOHANG) > 0) {
+					// the process whose pid we checked exited
+					it = this->pids.erase(it);
+				} else {
+					// otherwise, increment the iterator
+					++it;
+				}
 			}
 		}
+	}
+
+	// wait for all children to exit
+	for (std::vector<pid_t>::iterator it = this->pids.begin(); it != this->pids.end(); ++it) {
+		waitpid(*it, NULL, 0);
 	}
 }
 
