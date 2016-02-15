@@ -51,7 +51,7 @@ NutellaPlayer::~NutellaPlayer() {
 }
 
 void NutellaPlayer::run() {
-	while (this->sock >= 0 || this->frame_queue.size() >= 0) {
+	while (this->sock >= 0 || this->frame_queue.size() > 0) {
 		if (this->sock >= 0) {
 			// we are still connected with the streamer
 			receiveStream();
@@ -59,6 +59,9 @@ void NutellaPlayer::run() {
 
 		this->mp->printFrame(&(this->frame_queue));
 	}
+
+	if (vflag)
+		std::cout << "NutellaPlayer: run() finished" << std::endl;
 }
 
 void NutellaPlayer::connectToStreamer(std::string streamer_host, int streamer_port) {
