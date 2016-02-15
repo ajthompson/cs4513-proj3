@@ -19,7 +19,7 @@
 
 class NutellaServer {
 	// command line flags and arguments
-	int pflag, tflag, dflag, vflag, sflag;
+	int pflag, tflag, dflag, vflag, sflag, cflag;
 	unsigned long fps;
 	std::string moviedir;
 

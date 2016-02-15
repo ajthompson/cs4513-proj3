@@ -24,7 +24,7 @@
 #include "NutellaServer.hpp"
 
 NutellaServer::NutellaServer(int argc, char **argv) 
-		: pflag(0), tflag(0), dflag(0), vflag(0), sflag(0), fps(DEFAULT_FPS),
+		: pflag(0), tflag(0), dflag(0), vflag(0), sflag(0), cflag(0), fps(DEFAULT_FPS),
 		q_msock(-1), r_msock(-1), nsearch(NULL), nstream(NULL) {
 
 	int c;
@@ -34,6 +34,7 @@ NutellaServer::NutellaServer(int argc, char **argv)
 	static struct option long_options[] =
 		{
 			{"passive", no_argument, NULL, 'p'},			// only acts as a streamer
+			{"client-only", no_argument, NULL, 'c'},		// Acts only as a client
 			{"timed", no_argument, NULL, 't'},				// write timing log files to the log directory
 			{"directory", required_argument, NULL, 'd'},	// pass the movie dir by argument
 			{"verbose", no_argument, NULL, 'v'},			// print additional debug info
@@ -49,6 +50,9 @@ NutellaServer::NutellaServer(int argc, char **argv)
 				break;
 			case 'p':
 				this->pflag = 1;
+				break;
+			case 'c':
+				this->cflag = 1;
 				break;
 			case 't':
 				this->tflag = 1;
@@ -75,30 +79,32 @@ NutellaServer::NutellaServer(int argc, char **argv)
 		}
 	}
 
-	/* If the movie directory wasn't passed by argument, check the
-	   NUTELLA environment variable */
-	if (!this->dflag) {
-		const char *envname = "NUTELLA";
-		char *envdir = getenv(envname);
-		if (!envdir) {
-			std::cout << "Movie directory must be set by either the ";
-			std::cout << " --directory flag (-d) or by the NUTELLA ";
-			std::cout << "environment variable" << std::endl;
-			this->usage();
+	if (!cflag) {
+		/* If the movie directory wasn't passed by argument, check the
+		   NUTELLA environment variable */
+		if (!this->dflag) {
+			const char *envname = "NUTELLA";
+			char *envdir = getenv(envname);
+			if (!envdir) {
+				std::cout << "Movie directory must be set by either the ";
+				std::cout << " --directory flag (-d) or by the NUTELLA ";
+				std::cout << "environment variable" << std::endl;
+				this->usage();
+			}
+			this->moviedir = std::string(envdir);
 		}
-		this->moviedir = std::string(envdir);
-	}
 
-	// check that the movie directory exists
-	struct stat s;
-	if (stat(this->moviedir.c_str(), &s) != -1) {
-		if (!S_ISDIR(s.st_mode)) {
-			std::cout << "Movie directory " << this->moviedir << " must be a directory." << std::endl;
-			exit(101);
+		// check that the movie directory exists
+		struct stat s;
+		if (stat(this->moviedir.c_str(), &s) != -1) {
+			if (!S_ISDIR(s.st_mode)) {
+				std::cout << "Movie directory " << this->moviedir << " must be a directory." << std::endl;
+				exit(101);
+			}
+		} else {
+			std::cout << "Movie directory " << this->moviedir << " must exist." << std::endl;
+			exit(102);
 		}
-	} else {
-		std::cout << "Movie directory " << this->moviedir << " must exist." << std::endl;
-		exit(102);
 	}
 
 	if (this->vflag) {
@@ -250,8 +256,9 @@ int NutellaServer::handleQuery() {
 void NutellaServer::usage() {
 	std::cout << "nutella - P2P ASCII movie streaming" << std::endl;
 	std::cout << "Usage: " << std::endl;
-	std::cout << "\tnutella [-p | --passive] [-t | --timed] [-d | --directory <directory>] [-v | --verbose] [-s --show-fps] [-h | --help]" << std::endl;
+	std::cout << "\tnutella [{-p | --passive} | {-c | --client-only}] [-t | --timed] [-d | --directory <directory>] [-v | --verbose] [-s --show-fps] [-h | --help]" << std::endl;
 	std::cout << "\t\t-p Run in passive mode and do not act as a client" << std::endl;
+	std::cout << "\t\t-c Run in client only mode" << std::endl;
 	std::cout << "\t\t-t Log timing information to the ./log folder" << std::endl;
 	std::cout << "\t\t-d Specify the movie directory" << std::endl;
 	std::cout << "\t\t-v Print verbose output" << std::endl;
