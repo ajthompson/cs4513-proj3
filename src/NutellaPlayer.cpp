@@ -153,6 +153,8 @@ void NutellaPlayer::receiveStream() {
 		// the streamer has disconnected, so the socket should be closed
 		this->disconnect();
 	} else {
+		if (vflag)
+			std::cout << "NutellaPlayer: Error encountered" << std::endl;
 		/* An error occured, check to make sure it was EAGAIN or EWOULDBLOCK,
 		   and not something unexpected */
 		if (!(errno == EWOULDBLOCK || errno == EAGAIN)) {
