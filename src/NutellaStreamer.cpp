@@ -74,11 +74,17 @@ NutellaStreamer::NutellaStreamer(std::string dir, int vflag)
 		exit(305);
 	}
 
+	if (vflag)
+		std::cout << "Getting network interfaces" << std::endl;
+
 	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+		std::cout << "\t" << ifa->ifa_name << std::endl;
+		std::cout << "\t\t" << inet_ntoa(((struct sockaddr_in *)(ifa->ifa_addr))->sin_addr) << std::endl;
 		if (strcmp(ifa->ifa_name, "lo") != 0) {
 			// we've found an IP address
 			struct sockaddr_in *addr = (struct sockaddr_in *) ifa->ifa_addr;
 			this->address = std::string(inet_ntoa(addr->sin_addr));
+			break;
 		}
 	}
 }
