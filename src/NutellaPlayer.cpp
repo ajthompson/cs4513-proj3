@@ -127,6 +127,12 @@ void NutellaPlayer::receiveStream() {
 		// that could not be parsed into frames
 		temp_buffer = partial_frame + std::string(buffer, bytes_read);
 		bytes_read += partial_frame.size();
+		partial_frame = "";
+
+		if (vflag) {
+			std::cout << "Temporary buffer:" << std::endl;
+			std::cout << temp_buffer << std::endl;
+		}
 
 		// find any end delimiters
 		while (end_pos != std::string::npos) {
