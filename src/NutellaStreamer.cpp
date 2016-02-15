@@ -213,38 +213,20 @@ void NutellaStreamer::receiveTitle() {
 	std::string title = "/";
 	char buffer[BUFSIZE];
 	ssize_t bytes_recv;
-	int try_count = 0;	// keep track of how many errors we got
-						// this prevents only part of the title being
-						// received if we called recv before the entire
-						// payload was waiting at the socket
 
-	while ((bytes_recv = recv(this->s_socket, buffer, BUFSIZE, MSG_DONTWAIT)) > 0 && try_count < 5) {
-		if (bytes_recv < 0) {
-			if (!(errno == EWOULDBLOCK || errno == EAGAIN)) {
-				// we got an unexpected error
-				perror("recv()");
-			}
-
-			try_count++;
-		} else if (bytes_recv > 0) {
-			if (vflag)
-				std::cout << "Received message " << buffer << " of " << bytes_recv << " bytes" << std::endl;
-			title += std::string(buffer, bytes_recv);
+	bytes_recv = recv(this->s_socket, buffer, BUFSIZE, 0);
+	if (bytes_recv > 0) {
+		title += std::string(buffer, bytes_recv);
+		if (vflag) {
+			std::cout << "Received title: " << std::endl;
+			std::cout << "\tbytes_recv: " << bytes_recv << std::endl;
+			std::cout << "\ttitle:      " << title << std::endl;
 		}
+	} else if (bytes_recv < 0) {
+		std::cout << "Failed to receive message" << std::endl;
+	} else {
+		std::cout << "Received " << bytes_recv << " bytes" << std::endl;
 	}
-	// bytes_recv = recv(this->s_socket, buffer, BUFSIZE, 0);
-	// if (bytes_recv > 0) {
-	// 	title = std::string(buffer, bytes_recv);
-	// 	if (vflag) {
-	// 		std::cout << "Received title: " << std::endl;
-	// 		std::cout << "\tbytes_recv: " << bytes_recv << std::endl;
-	// 		std::cout << "\ttitle:      " << title << std::endl;
-	// 	}
-	// } else if (bytes_recv < 0) {
-	// 	std::cout << "Failed to receive message" << std::endl;
-	// } else {
-	// 	std::cout << "Received " << bytes_recv << " bytes" << std::endl;
-	// }
 
 	this->moviepath += title;
 
@@ -267,7 +249,7 @@ void NutellaStreamer::streamMovie() {
 			frame += line;
 
 			if (this->vflag)
-				std::cout << "Read frame:\n" << frame << std::endl;
+				std::cout << "NutellaStreamer: Sending frame" << std::endl;
 
 			// send the frame
 			this->sendFrame(line);
