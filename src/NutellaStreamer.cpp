@@ -218,14 +218,14 @@ void NutellaStreamer::receiveTitle() {
 	if (bytes_recv > 0) {
 		title += std::string(buffer, bytes_recv);
 		if (vflag) {
-			std::cout << "Received title: " << std::endl;
+			std::cout << "NutellaStreamer: Received title: " << std::endl;
 			std::cout << "\tbytes_recv: " << bytes_recv << std::endl;
 			std::cout << "\ttitle:      " << title << std::endl;
 		}
 	} else if (bytes_recv < 0) {
-		std::cout << "Failed to receive message" << std::endl;
+		std::cout << "NutellaStreamer: Failed to receive message" << std::endl;
 	} else {
-		std::cout << "Received " << bytes_recv << " bytes" << std::endl;
+		std::cout << "NutellaStreamer: Received " << bytes_recv << " bytes" << std::endl;
 	}
 
 	this->moviepath += title;
@@ -253,7 +253,7 @@ void NutellaStreamer::streamMovie() {
 				std::cout << "NutellaStreamer: Sending frame ending with '" << line << "'" << std::endl;
 
 			// send the frame
-			this->sendFrame(line);
+			this->sendFrame(frame);
 
 			// reset the frame string
 			frame = "";
@@ -262,6 +262,10 @@ void NutellaStreamer::streamMovie() {
 
 		// add the line to the frame, and readd the stripped newline
 		frame += line + "\n";
+
+		if (this->vflag) {
+			std::cout << "NutellaStreamer: Adding line: " << line << std::endl;
+		}
 	}
 
 	// close the file and disconnect
@@ -275,6 +279,8 @@ void NutellaStreamer::streamMovie() {
  */
 void NutellaStreamer::sendFrame(std::string frame) {
 	ssize_t bytes_sent = send(this->s_socket, frame.c_str(), frame.size(), 0);
+	if (this->vflag)
+		std::cout << "NutellaStreamer: Sent " << bytes_sent << " bytes" << std::endl;
 	if (bytes_sent < 0)
 		perror("send()");
 }

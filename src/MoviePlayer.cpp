@@ -37,7 +37,7 @@ volatile sig_atomic_t MoviePlayer::refresh_display;
 MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) {
 	struct sigaction sa;
 	struct itimerval timer;
-	long usecs;
+	long secs = 0, usecs = 0;
 
 	this->fps = fps;
 	this->show_fps = show_fps;
@@ -48,7 +48,11 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) 
 	gettimeofday(&(this->last_frame_time), NULL);
 
 	// calculate the interval to achieve the given fps
-	usecs = 1000000 / this->fps;
+	if (fps <= 1) {
+		secs = 1;
+	} else {
+		usecs = fps / 1000000;
+	}
 
 	// set up the timer handler to handle SIGALRM
 	memset(&sa, 0, sizeof(sa));
@@ -56,9 +60,9 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) 
 	sigaction(SIGALRM, &sa, NULL);
 
 	// configure the timer
-	timer.it_value.tv_sec = 0;
+	timer.it_value.tv_sec = secs;
 	timer.it_value.tv_usec = usecs;
-	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_sec = secs;
 	timer.it_interval.tv_usec = usecs;
 
 	setitimer(ITIMER_REAL, &timer, NULL);
