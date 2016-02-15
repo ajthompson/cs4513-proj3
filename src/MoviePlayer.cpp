@@ -121,9 +121,9 @@ void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
 		}
 
 		std::cout << std::flush;
-	}
 
-	frame_queue->pop();
+		frame_queue->pop();
+	}
 }
 
 /**

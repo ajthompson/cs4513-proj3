@@ -62,7 +62,8 @@ void NutellaPlayer::run() {
 			this->receiveStream();
 		}
 
-		this->mp->printFrame(&(this->frame_queue));
+		if (this->frame_queue.size() > 0)
+			this->mp->printFrame(&(this->frame_queue));
 	}
 
 	if (vflag)
