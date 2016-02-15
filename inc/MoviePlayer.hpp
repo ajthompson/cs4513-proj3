@@ -31,6 +31,7 @@ public:
 	~MoviePlayer();
 
 	void prepTerminal();
+	void clearAttributes();
 	void printFrame(std::queue<std::string> *frame_queue);
 
 private:

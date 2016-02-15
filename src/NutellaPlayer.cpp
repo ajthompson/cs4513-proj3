@@ -66,6 +66,9 @@ void NutellaPlayer::run() {
 			this->mp->printFrame(&(this->frame_queue));
 	}
 
+	// reset the terminal
+	this->mp->clearAttributes();
+
 	if (vflag)
 		std::cout << "NutellaPlayer: run() finished" << std::endl;
 }

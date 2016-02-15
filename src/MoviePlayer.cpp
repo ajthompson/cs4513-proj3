@@ -73,7 +73,7 @@ MoviePlayer::~MoviePlayer() {
 
 	// clear the terminal and any set attributes
 	this->prepTerminal();
-	std::cout << "\x1B[0m" << std::flush;
+	this->clearAttributes();
 }
 
 /**
@@ -96,6 +96,13 @@ MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps, int t
  */
 void MoviePlayer::prepTerminal() {
 	std::cout << "\x1B[2J\x1B[1;1H" << std::flush;
+}
+
+/**
+ * Clear any set ANSI attributes
+ */
+void MoviePlayer::clearAttributes() {
+	std::cout << "\x1B[0m" << std::flush;
 }
 
 /**
