@@ -62,8 +62,10 @@ void NutellaPlayer::run() {
 			this->receiveStream();
 		}
 
-		if (this->frame_queue.size() > 0)
-			this->mp->printFrame(&(this->frame_queue));
+		if (this->frame_queue.size() > 0) {
+			// this->mp->printFrame(&(this->frame_queue));
+			this->frame_queue.pop();
+		}
 	}
 
 	// reset the terminal
