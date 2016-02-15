@@ -13,10 +13,10 @@
 #include <string>
 #include <queue>
 
-#include "MoviePlayer.h"
+#include "MoviePlayer.hpp"
 
 class NutellaPlayer {
-	int socket;
+	int sock;
 	std::string title;
 
 	MoviePlayer *mp;
@@ -32,10 +32,11 @@ public:
 	void run();
 
 private:
-	void connect(std::string streamer_host, int streamer_port);
+	void connectToStreamer(std::string streamer_host, int streamer_port);
 	void disconnect();
 	void sendTitle();
 	void receiveStream();
+	struct addrinfo getServInfo(std::string streamer_host, int streamer_port);
 };
 
 #endif

@@ -12,6 +12,8 @@
 #ifndef MOVIE_PLAYER_HPP_
 #define MOVIE_PLAYER_HPP_
 
+#include <csignal>
+
 class MoviePlayer {
 	unsigned long fps;
 	int show_fps;
@@ -19,20 +21,19 @@ class MoviePlayer {
 	// fps logging
 	struct timeval last_frame_time;
 
+public:
 	// indicate that we should publish a new frame
 	static volatile sig_atomic_t refresh_display;
-
-public:
 	// factory, to properly initialize refresh
-	static MoviePlayer *makeMoviePlayer(int fps, int show_fps);
+	static MoviePlayer *makeMoviePlayer(unsigned long fps, int show_fps);
 
 	~MoviePlayer();
 
 	void prepTerminal();
-	void printFrame(std::queue<std::string> frame_queue);
+	void printFrame(std::queue<std::string> *frame_queue);
 
 private:
-	MoviePlayer(int fps);				// constructor
+	MoviePlayer(unsigned long fps, int show_fps);				// constructor
 
 	double computeFPS();
 	static void handle_timer(int sig);	// SIGALARM handler

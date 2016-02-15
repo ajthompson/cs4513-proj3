@@ -13,13 +13,18 @@
 
 class NutellaStreamer {
 	int port;
+	std::string address, s_port;
+
 	int l_socket, s_socket;	// socket for listening and streaming respectively
 	std::string moviepath;
 
 public:
-	NutellaStreamer(int socket, std::string dir);
+	NutellaStreamer(std::string dir);
 	~NutellaStreamer();
 	void run();
+
+	void deactivate();
+	std::string getResponseMessage(std::string title);
 private:
 	pid_t waitForConnection();
 	void receiveTitle();

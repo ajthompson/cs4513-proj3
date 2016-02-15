@@ -7,19 +7,27 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
-#include "errno.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+#include <string>
 
-#include "proj3.h"
+#include <errno.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include "NutellaPlayer.hpp"
 
+#include "proj3.h"
 
 NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host, 
 		int streamer_port, unsigned long fps, int fps_flag)
-		: socket(-1), mp(NULL), partial_frame("") {
+		: sock(-1), mp(NULL), partial_frame("") {
 
 	/* Connect to the streamer */
-	this->connect(streamer_host, streamer_port);
+	this->connectToStreamer(streamer_host, streamer_port);
 
 	/* Send the title to the streamer */
 	this->sendTitle();
@@ -33,14 +41,14 @@ NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host,
  * Destructor
  */
 NutellaPlayer::~NutellaPlayer() {
-	if (this->socket >= 0)
+	if (this->sock >= 0)
 		this->disconnect();
 	delete this->mp;
 }
 
-int NutellaPlayer::run() {
-	while (this->socket >= 0 || this->frame_queue.size() >= 0) {
-		if (this->socket >= 0) {
+void NutellaPlayer::run() {
+	while (this->sock >= 0 || this->frame_queue.size() >= 0) {
+		if (this->sock >= 0) {
 			// we are still connected with the streamer
 			receiveStream();
 		}
@@ -49,15 +57,15 @@ int NutellaPlayer::run() {
 	}
 }
 
-void NutellaPlayer::connect(std::string streamer_host, int streamer_port) {
+void NutellaPlayer::connectToStreamer(std::string streamer_host, int streamer_port) {
 	struct addrinfo servAddrInfo = getServInfo(streamer_host, streamer_port);
 
-	if ((this->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+	if ((this->sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		perror("socket()");
 		exit(301);
 	}
 
-	if ((connect(this->socket, (struct sockaddr *) servAddrInfo.ai_addr, sizeof(servAddrInfo))) != 0) {
+	if ((connect(this->sock, (struct sockaddr *) servAddrInfo.ai_addr, sizeof(servAddrInfo))) != 0) {
 		perror("connect()");
 		exit(302);
 	}
@@ -67,12 +75,12 @@ void NutellaPlayer::connect(std::string streamer_host, int streamer_port) {
  * Disconnect from the streamer
  */
 void NutellaPlayer::disconnect() {
-	close(this->socket);
-	this->socket = -1;
+	close(this->sock);
+	this->sock = -1;
 }
 
 void NutellaPlayer::sendTitle() {
-	ssize_t bytes_sent = send(this->socket, this->title.c_str(), this->title.size());
+	ssize_t bytes_sent = send(this->sock, this->title.c_str(), this->title.size(), 0);
 	if (bytes_sent < 0)
 		perror("send()");
 }
@@ -83,21 +91,21 @@ void NutellaPlayer::receiveStream() {
 	size_t end_pos = 0, last_pos = 0;
 	ssize_t bytes_read;
 
-	bytes_read = recv(this->socket, buffer, BUFSIZE, MSG_DONTWAIT);
+	bytes_read = recv(this->sock, buffer, BUFSIZE, MSG_DONTWAIT);
 
 	if (bytes_read > 0) {
 		// create a string, adding the leftovers from previous recv's
 		// that could not be parsed into frames
-		temp_buffer = partial_frame + string(buffer, bytesRead);
+		temp_buffer = partial_frame + std::string(buffer, bytes_read);
 		bytes_read += partial_frame.size();
 
 		// find any end delimiters
-		while (end_pos != string::npos) {
+		while (end_pos != std::string::npos) {
 			end_pos = temp_buffer.find("end", last_pos);
 
-			if (end_pos != string::npos) {
+			if (end_pos != std::string::npos) {
 				// create a new substring from last_pos to the beginning of 'end'
-				temp_frame = string(temp_buffer, last_pos, end_pos);
+				temp_frame = std::string(temp_buffer, last_pos, end_pos);
 
 				// add to the frame queue
 				this->frame_queue.push(temp_frame);
@@ -107,10 +115,10 @@ void NutellaPlayer::receiveStream() {
 			} else {
 				// there are no remaining end delimiters
 				// copy the remaining to partial_frame
-				this->partial_frame = string(temp_buffer, last_pos, end_pos);
+				this->partial_frame = std::string(temp_buffer, last_pos, end_pos);
 			}
 		}
-	} else if (bytesRead == 0) {
+	} else if (bytes_read == 0) {
 		// the streamer has disconnected, so the socket should be closed
 		this->disconnect();
 	} else {
@@ -121,3 +129,23 @@ void NutellaPlayer::receiveStream() {
 		}
 	}
 }
+
+struct addrinfo NutellaPlayer::getServInfo(std::string streamer_host, int streamer_port) {
+	struct addrinfo hints, *servInfo;
+
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	std::stringstream ss;
+	ss << streamer_port;
+	std::string s_port = ss.str();
+
+	if (getaddrinfo(streamer_host.c_str(), s_port.c_str(), &hints, &servInfo) != 0) {
+		perror("getaddrinfo()");
+		exit(401);
+	}
+
+	return *servInfo;
+} 

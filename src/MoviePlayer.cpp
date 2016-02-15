@@ -9,15 +9,23 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
+#include <cstring>
 #include <iostream>
 #include <queue>
+#include <string>
 
 #include <signal.h>
 #include <sys/time.h>
 
 #include "proj3.h"
 
-#include "MoviePlayer.h"
+#include "MoviePlayer.hpp"
+
+#ifndef _REFRESH_DISPLAY_
+#define _REFRESH_DISPLAY_
+volatile sig_atomic_t MoviePlayer::refresh_display;
+#endif
+
 
 /**
  * Constructor
@@ -40,10 +48,10 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps) {
 	// calculate the interval to achieve the given fps
 	usecs = 1000000 / this->fps;
 
-	// set up the timer handler to handle SIGALARM
+	// set up the timer handler to handle SIGALRM
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = &MoviePlayer::handle_timer;
-	sigaction(SIGALARM, &sa, NULL);
+	sigaction(SIGALRM, &sa, NULL);
 
 	// configure the timer
 	timer.it_value.tv_sec = 0;
@@ -56,11 +64,11 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps) {
 
 MoviePlayer::~MoviePlayer() {
 	// disable the signal handler
-	sigaction(SIGALARM, SIG_DFL, NULL);
+	signal(SIGALRM, SIG_DFL);
 
 	// clear the terminal and any set attributes
 	this->prepTerminal();
-	cout << "\x1B[0m" << std::flush;
+	std::cout << "\x1B[0m" << std::flush;
 }
 
 /**
@@ -75,7 +83,9 @@ MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps) {
 	MoviePlayer *mp = new MoviePlayer(fps, show_fps);
 
 	// set the refresh variable
-	MoviePlayer::refresh_display = 0;
+	// MoviePlayer::refresh_display = 0;
+
+	return mp;
 }
 
 /**
@@ -83,7 +93,7 @@ MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps) {
  * clearing the screen and moving the cursor to the top left
  */
 void MoviePlayer::prepTerminal() {
-	cout << "\x1B[2J\x1B[1;1H" << std::flush;
+	std::cout << "\x1B[2J\x1B[1;1H" << std::flush;
 }
 
 /**
@@ -93,23 +103,25 @@ void MoviePlayer::prepTerminal() {
  * @param frame_queue The queue of frames that haven't been printed yet
  */
 void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
-	if (refresh_display && frame_queue.size() > 0) {
+	if (refresh_display && frame_queue->size() > 0) {
 		MoviePlayer::refresh_display = 0;
 
 		// reset the cursor to the top left
 		std::cout << "\x1B[1;1H";
 
 		// print the frame
-		std::cout << frame_queue->pop();
+		std::cout << frame_queue->front();
 
 		if (this->show_fps) {
 			// go to the next line, and clear to the end of the terminal
 			// this will remove the previous fps value
-			cout << "\n\x1B[0K" << this->computeFPS() << " fps";
+			std::cout << "\n\x1B[0K" << this->computeFPS() << " fps";
 		}
 
 		std::cout << std::flush;
 	}
+
+	frame_queue->pop();
 }
 
 /**
@@ -132,9 +144,9 @@ double MoviePlayer::computeFPS() {
 }
 
 /**
- * SIGALARM signal handler. Updates static refresh_display member to
+ * SIGALRM signal handler. Updates static refresh_display member to
  * indicate that a new frame can be printed.
  */
-static void handle_timer(int sig) {
+void MoviePlayer::handle_timer(int sig) {
 	MoviePlayer::refresh_display = 1;
 }

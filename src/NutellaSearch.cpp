@@ -12,9 +12,19 @@
 #include <sstream>
 #include <string>
 
-#include "msock.h"
+#include <signal.h>
+#include <sys/time.h>
+// #include <sys/types.h>
 
 #include "NutellaSearch.hpp"
+
+#include "msock.h"
+#include "proj3.h"
+
+#ifndef CHECK_MCAST_
+#define CHECK_MCAST_
+volatile sig_atomic_t NutellaSearch::check_mcast;
+#endif
 
 /**
  * Factory method to initialize the static member of NutellaSearch
@@ -23,24 +33,24 @@
  * @param  lsock The multicast listen socket
  * @return       A pointer to a NutellaSearch object
  */
-static NutellaSearch *NutellaSearch::makeNutellaSearch(int bsock, int lsock, unsigned int fps, int fps_flag) {
-	NutellaSearch::check_mcast = 1;
+NutellaSearch *NutellaSearch::makeNutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag) {
+	// NutellaSearch::check_mcast = 1;
 
-	return new NutellaSearch(bsock, lsock, fps, fps_flag);
+	return new NutellaSearch(fps, fps_flag, tflag, vflag);
 }
 
 /**
  * Constructor
  */
-NutellaSearch::NutellaSearch(int bsock, int lsock, unsigned long fps, int fps_flag) 
-		: b_msock(bsock), l_msock(lsock), fps(fps), fps_flag(fps_flag), np(NULL) {
+NutellaSearch::NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag) 
+		: tflag(tflag), vflag(vflag), q_msock(-1), r_msock(-1), fps(fps), fps_flag(fps_flag), np(NULL) {
 	struct sigaction sa;
 	struct itimerval timer;
 
-	// set up the timer handler to handle SIGALARM
+	// set up the timer handler to handle SIGALRM
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = &NutellaSearch::handle_timeout;
-	sigaction(SIGALARM, &sa, NULL);
+	sigaction(SIGALRM, &sa, NULL);
 
 	// configure the timer to not do anything yet
 	timer.it_value.tv_sec = 0;
@@ -49,6 +59,17 @@ NutellaSearch::NutellaSearch(int bsock, int lsock, unsigned long fps, int fps_fl
 	timer.it_interval.tv_usec = 0;
 
 	setitimer(ITIMER_REAL, &timer, NULL);
+
+	// setup multicast sockets
+	if ((this->q_msock = msockcreate(SEND, DEFAULT_MCAST_QUERY_ADDR, DEFAULT_MCAST_QUERY_PORT)) == -1) {
+		std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_QUERY_PORT;
+		std::cout << " of " << DEFAULT_MCAST_QUERY_ADDR << std::endl;
+	}
+
+	if ((this->r_msock = msockcreate(RECV, DEFAULT_MCAST_RESPONSE_ADDR, DEFAULT_MCAST_RESPONSE_PORT)) == -1) {
+		std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_RESPONSE_PORT;
+		std::cout << " of " << DEFAULT_MCAST_RESPONSE_ADDR << std::endl;
+	}
 }
 
 /**
@@ -56,8 +77,8 @@ NutellaSearch::NutellaSearch(int bsock, int lsock, unsigned long fps, int fps_fl
  */
 NutellaSearch::~NutellaSearch() {
 	// we only use the sockets inside of this class
-	close(this->b_msock);
-	close(this->l_msock);
+	msockdestroy(this->q_msock);
+	msockdestroy(this->r_msock);
 }
 
 void NutellaSearch::run() {
@@ -83,32 +104,34 @@ void NutellaSearch::run() {
 			std::cout << "Title invalid" << std::endl;
 			continue;
 		} else if (title.compare("quit") == 0) {
+			// send SIGINT to all NutellaServer processes
+			killpg(0, SIGINT);
 			break;
 		}
 
 		// multicast the title
-		msend(this->b_msock, title.c_str(), title.size());
+		msend(this->q_msock, title.c_str(), title.size());
 
 		// set up timeout timer
 		setitimer(ITIMER_REAL, &timer, NULL);
 
 		// wait for a reply or timeout
 		do {
-			if ((bytes_recv = mrecv(this->l_msock, buffer, BUFSIZE)) > 0) {
+			if ((bytes_recv = mrecv(this->r_msock, buffer, BUFSIZE, WNOHANG)) > 0) {
 				// parse the received value to ensure it is a response to
 				// this query
-				std::stringstream received(string(buffer, bytes_recv));
-				std::getline(stringstream, recv_title);
+				std::stringstream received(std::string(buffer, bytes_recv));
+				std::getline(received, recv_title);
 				if (title.compare(recv_title) != 0) {
 					// title didn't match
 					continue;
 				}
 
-				std::getline(stringstream, host);
-				std::getline(stringstream, port);
+				std::getline(received, host);
+				std::getline(received, port);
 				break;
 			}
-		} while (check_mcast);
+		} while (NutellaSearch::check_mcast);
 
 		// create the Nutella Player
 		NutellaPlayer *np = new NutellaPlayer(title, host, atoi(port.c_str()), this->fps, this->fps_flag);
@@ -117,6 +140,6 @@ void NutellaSearch::run() {
 }
 
 
-static void NutellaSearch::handle_timeout(int sig) {
+void NutellaSearch::handle_timeout(int sig) {
 	NutellaSearch::check_mcast = 0;
 }

@@ -8,16 +8,17 @@ ifneq ("$(wildcard /usr/local/bin/g++)","")
 GXX=/usr/local/bin/g++
 GCC=/usr/local/bin/gcc
 else
-GXX=/usr/bin/g++
-GCC=/usr/bin/gcc
+GXX=g++
+GCC=gcc
 endif
 
 IDIR = ./inc
 ODIR = ./obj
 SDIR = ./src
 BDIR = ./bin
+LDIR = ./log
 
-__NUTELLA_CXX_SOURCES = $(SDIR)/main.cpp $(SDIR)/NutellaServer.cpp $(SDIR)/NutellaStreamer.cpp $(SDIR)/NutellaPlayer.cpp $(SDIR)/MoviePlayer.cpp
+__NUTELLA_CXX_SOURCES = $(SDIR)/main.cpp $(SDIR)/NutellaServer.cpp $(SDIR)/NutellaStreamer.cpp $(SDIR)/NutellaSearch.cpp $(SDIR)/NutellaPlayer.cpp $(SDIR)/MoviePlayer.cpp
 
 __NUTELLA_C___SOURCES = $(SDIR)/msock.c
 
@@ -44,13 +45,13 @@ VPATH = $(SDIR):$(IDIR):$(ODIR)
 all: nutella
 
 nutella: $(NUTELLA_OBJECTS)
-	$(GCC) $(CXX_FLAGS) -o $(BDIR)/nutella $^ $(L_FLAGS)
+	$(GXX) $(CXX_FLAGS) -o $(BDIR)/nutella $^ $(L_FLAGS)
 
 $(ODIR)/%.obj: %.cpp
-	$(GCC) $(CXX_FLAGS) -c $< -o $@
+	$(GXX) $(CXX_FLAGS) -c $< -o $@
 
 $(ODIR)/%.o: %.c
-	$(GCC) $(C_FLAGS) -c $< -o $@
+	$(GXX) $(CXX_FLAGS) -c $< -o $@
 
 .PHONY: clean
 

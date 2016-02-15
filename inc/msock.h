@@ -5,7 +5,7 @@
  * 
  * Basic multicast socket wrappers.
  *
- * Modified by Alec Thompson to not block on mrecv
+ * Modified by Alec Thompson to take a flags argument
  * February 2016
  */
 
@@ -29,7 +29,7 @@
 
 /* msockcreate -- Create socket from which to read.
    return socket descriptor if ok, -1 if not ok.  */
-int msockcreate(int type, char *address, int port);
+int msockcreate(int type, char const *address, int port);
 
 /* msockdestroy -- Destroy socket by closing.
    return socket descriptor if ok, -1 if not ok.  */
@@ -37,11 +37,11 @@ int msockdestroy(int sock);
 
 /* msend -- send multicast essage to given address. 
    return number of bytes sent, -1 if error. */
-int msend(int sock, char *message, int len);
+int msend(int sock, char const *message, int len);
 
 /* mrecv -- receive message on given mcast address.
    return bytes received, -1 if error. */
-int mrecv(int sock, char *message, int max_len);
+int mrecv(int sock, char *message, int max_len, int flags);
 
 
 

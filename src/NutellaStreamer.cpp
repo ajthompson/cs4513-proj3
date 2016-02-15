@@ -6,7 +6,16 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
+#include <sstream>
+
+#include <arpa/inet.h>
+#include <errno.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #include "proj3.h"
 #include "NutellaStreamer.hpp"
@@ -17,9 +26,9 @@
  * @param port The port to bind to
  * @param dir  The directory containing the movies
  */
-NutellaStreamer::NutellaStreamer(int port, std::string dir) 
-		: port(port), l_socket(-1), s_socket(-1), moviepath(dir) {
-	// setup socket for streaming
+NutellaStreamer::NutellaStreamer(std::string dir) 
+		: l_socket(-1), s_socket(-1), moviepath(dir) {
+	// setup a socket to stream
 	if ((this->l_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("socket()");
 		exit(301);
@@ -28,12 +37,8 @@ NutellaStreamer::NutellaStreamer(int port, std::string dir)
 	struct sockaddr_in address;
 	memset(&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
-	address.sin_port = htons(this->port);
+	address.sin_port = htons(0);		// get any open port
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	// set socket to be able to be resused quickly
-	int optval = 1;
-	setsockopt(this->l_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	if (bind(this->l_socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("bind()");
@@ -44,6 +49,36 @@ NutellaStreamer::NutellaStreamer(int port, std::string dir)
 		perror("listen()");
 		exit(303);
 	}
+
+	// get the port
+	struct sockaddr_in s_in;
+	socklen_t len = sizeof(s_in);
+
+	if (getsockname(l_socket, (struct sockaddr *) &s_in, &len) == -1) {
+		perror("getsockname()");
+		exit(304);
+	} else {
+		this->port = ntohs(s_in.sin_port);
+		std::stringstream ss;
+		ss << this->port;
+		this->s_port = ss.str();
+	}
+
+	// get the IP address
+	struct ifaddrs *ifaddr, *ifa;
+	
+	if (getifaddrs(&ifaddr) == -1) {
+		perror("getifaddrs()");
+		exit(305);
+	}
+
+	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+		if (strcmp(ifa->ifa_name, "lo") != 0) {
+			// we've found an IP address
+			struct sockaddr_in *addr = (struct sockaddr_in *) ifa->ifa_addr;
+			this->address = std::string(inet_ntoa(addr->sin_addr));
+		}
+	}
 }
 
 /**
@@ -53,7 +88,13 @@ NutellaStreamer::~NutellaStreamer() {
 	this->disconnect();
 }
 
-
+/**
+ * Run the main loop of the class.
+ *
+ * This waits for connections, which then forks, and
+ * if this is the child, performs the necessary actions
+ * to stream a requested movie.
+ */
 void NutellaStreamer::run() {
 	pid_t pid;
 
@@ -65,6 +106,33 @@ void NutellaStreamer::run() {
 		this->receiveTitle();
 		this->streamMovie();
 	}
+}
+
+/**
+ * Closes the objects sockets
+ * 
+ * Used for the streamer kept in the parent process,
+ * as it is forked to be able to wait for connections
+ */
+void NutellaStreamer::deactivate() {
+	this->disconnect();
+}
+
+/**
+ * Construct a response message with the title of the movie, the address
+ * of the server, and the unicast port to connect on.
+ *
+ * The message is formatted as follows:
+ *
+ * title\n
+ * address\n
+ * port\n
+ * 
+ * @param  title The title of the requested movie
+ * @return       the response message
+ */
+std::string NutellaStreamer::getResponseMessage(std::string title) {
+	return title + "\n" + this->address + "\n" + this->s_port;
 }
 
 /**
@@ -129,7 +197,7 @@ void NutellaStreamer::receiveTitle() {
 
 			try_count++;
 		} else if (bytes_recv > 0) {
-			title += string(buffer, bytes_recv);
+			title += std::string(buffer, bytes_recv);
 		}
 	}
 
@@ -139,12 +207,12 @@ void NutellaStreamer::receiveTitle() {
 /**
  * Read the movie from the file and transmit each frame to the client
  */
-void streamMovie() {
+void NutellaStreamer::streamMovie() {
 	std::string frame = "";
 	// open the movie file
-	std::ifstream movie(this->moviepath);
+	std::ifstream movie(this->moviepath.c_str());
 
-	for (std::string line; getline(input, line);) {
+	for (std::string line; getline(movie, line);) {
 
 		// check if it's the end of a frame
 		if (line.compare("end")) {
@@ -171,8 +239,8 @@ void streamMovie() {
  * Send a frame to the client
  * @param frame A string consisting of a frame of the movie
  */
-void sendFrame(std::string frame) {
-	ssize_t bytes_sent = send(this->s_socket, frame.c_str(), frame.size());
+void NutellaStreamer::sendFrame(std::string frame) {
+	ssize_t bytes_sent = send(this->s_socket, frame.c_str(), frame.size(), 0);
 	if (bytes_sent < 0)
 		perror("send()");
 }
@@ -181,8 +249,12 @@ void sendFrame(std::string frame) {
  * Disconnect from the client/listening
  */
 void NutellaStreamer::disconnect() {
-	if (l_socket >= 0)
+	if (l_socket >= 0) {
 		close(l_socket);
-	if (s_socket >= 0)
-		close(m_socket);
+		l_socket = -1;
+	}
+	if (s_socket >= 0) {
+		close(s_socket);
+		s_socket = -1;
+	}
 }

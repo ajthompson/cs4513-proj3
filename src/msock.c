@@ -15,7 +15,7 @@ static int is_valid[NUM_SOCK] ={0,0,0,0,0,0,0,0};
 
 /* msockcreate -- Create socket from which to read.
    return socket descriptor if ok, -1 if not ok.  */
-int msockcreate(int type, char *address, int port) {
+int msockcreate(int type, char const *address, int port) {
   int sock;
   int ret, on=1;
   struct ip_mreq mreq;
@@ -79,7 +79,7 @@ int msockdestroy(int sock) {
 
 /* msend -- send multicast essage to given address. 
    return number of bytes sent, -1 if error. */
-int msend(int sock, char *message, int len) {
+int msend(int sock, char const *message, int len) {
   int addrlen;
   
   if (!is_valid[sock]) {
@@ -94,7 +94,7 @@ int msend(int sock, char *message, int len) {
 
 /* mrecv -- receive message on given mcast address. Will block.
    return bytes received, -1 if error. */
-int mrecv(int sock, char *message, int max_len) {
+int mrecv(int sock, char *message, int max_len, int flags) {
   int addrlen;
 
   if (!is_valid[sock]) {
@@ -103,7 +103,7 @@ int mrecv(int sock, char *message, int max_len) {
   }
   addrlen = sizeof(adr[sock]);
   
-  return (recvfrom(sock, message, max_len, MSG_DONTWAIT, 
-		   (struct sockaddr *) &adr[sock], &addrlen));
+  return (recvfrom(sock, message, max_len, flags, 
+		   (struct sockaddr *) &adr[sock], (socklen_t *) &addrlen));
 }
 
