@@ -159,7 +159,7 @@ NutellaServer::NutellaServer(int argc, char **argv)
 		}
 
 		// create a streamer
-		nstream = new NutellaStreamer(this->moviedir);
+		nstream = new NutellaStreamer(this->moviedir, this->vflag);
 	}
 }
 

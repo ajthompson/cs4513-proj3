@@ -76,8 +76,10 @@ void NutellaPlayer::connectToStreamer(std::string streamer_host, int streamer_po
  * Disconnect from the streamer
  */
 void NutellaPlayer::disconnect() {
-	close(this->sock);
-	this->sock = -1;
+	if (this->sock >= 0) {
+		close(this->sock);
+		this->sock = -1;
+	}
 }
 
 void NutellaPlayer::sendTitle() {

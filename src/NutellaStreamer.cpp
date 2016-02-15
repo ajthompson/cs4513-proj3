@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include <arpa/inet.h>
@@ -27,8 +28,8 @@
  * @param port The port to bind to
  * @param dir  The directory containing the movies
  */
-NutellaStreamer::NutellaStreamer(std::string dir) 
-		: l_socket(-1), s_socket(-1), moviepath(dir) {
+NutellaStreamer::NutellaStreamer(std::string dir, int vflag) 
+		: vflag(vflag), l_socket(-1), s_socket(-1), moviepath(dir) {
 	// setup a socket to stream
 	if ((this->l_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("socket()");
@@ -133,6 +134,12 @@ void NutellaStreamer::deactivate() {
  * @return       the response message
  */
 std::string NutellaStreamer::getResponseMessage(std::string title) {
+	if (this->vflag) {
+		std::cout << "Generating response message: " << std::endl;
+		std::cout << "\t" << title << std::endl;
+		std::cout << "\t" << this->address << std::endl;
+		std::cout << "\t" << this->s_port << std::endl;
+	}
 	return title + "\n" + this->address + "\n" + this->s_port;
 }
 
@@ -155,6 +162,9 @@ pid_t NutellaStreamer::waitForConnection() {
 			perror("accept()");
 			exit(304);
 		}
+
+		if (this->vflag)
+			std::cout << "Accepted connection" << std::endl;
 
 		// fork the process
 		pid = fork();

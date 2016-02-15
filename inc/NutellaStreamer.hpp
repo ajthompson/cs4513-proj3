@@ -12,6 +12,7 @@
 #include <string>
 
 class NutellaStreamer {
+	int vflag;
 	int port;
 	std::string address, s_port;
 
@@ -19,7 +20,7 @@ class NutellaStreamer {
 	std::string moviepath;
 
 public:
-	NutellaStreamer(std::string dir);
+	NutellaStreamer(std::string dir, int vflag);
 	~NutellaStreamer();
 	void run();
 
