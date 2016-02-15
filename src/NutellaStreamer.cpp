@@ -243,13 +243,14 @@ void NutellaStreamer::streamMovie() {
 	std::ifstream movie(this->moviepath.c_str());
 
 	for (std::string line; getline(movie, line);) {
+		int end_cmp, stop_cmp;
 
 		// check if it's the end of a frame
-		if (line.compare("end")) {
-			frame += line;
+		if ((end_cmp = line.compare("end")) == 0 || (stop_cmp = line.compare("stop")) == 0) {
+			frame += "end";
 
 			if (this->vflag)
-				std::cout << "NutellaStreamer: Sending frame" << std::endl;
+				std::cout << "NutellaStreamer: Sending frame ending with '" << line << "'" << std::endl;
 
 			// send the frame
 			this->sendFrame(line);

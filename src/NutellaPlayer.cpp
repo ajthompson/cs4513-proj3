@@ -130,6 +130,8 @@ void NutellaPlayer::receiveStream() {
 		// find any end delimiters
 		while (end_pos != std::string::npos) {
 			end_pos = temp_buffer.find("end", last_pos);
+			if (this->vflag)
+				std::cout << "NutellaPlayer: Found 'end' at " << end_pos << std::endl;
 
 			if (end_pos != std::string::npos) {
 				// create a new substring from last_pos to the beginning of 'end'
@@ -158,8 +160,8 @@ void NutellaPlayer::receiveStream() {
 		this->disconnect();
 	} else {
 		int error = errno;
-		if (vflag && (error == EWOULDBLOCK || error == EAGAIN))
-			std::cout << "NutellaPlayer: No frame waiting" << std::endl;
+		// if (vflag && (error == EWOULDBLOCK || error == EAGAIN))
+		// 	std::cout << "NutellaPlayer: No frame waiting" << std::endl;
 		/* An error occured, check to make sure it was EAGAIN or EWOULDBLOCK,
 		   and not something unexpected */
 		if (!(error == EWOULDBLOCK || error == EAGAIN)) {
