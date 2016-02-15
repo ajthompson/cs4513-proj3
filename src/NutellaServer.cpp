@@ -75,6 +75,7 @@ NutellaServer::NutellaServer(int argc, char **argv)
 				break;
 			case '?':
 				std::cout << "Unrecognized option '" << c << "'" << std::endl;
+				this->usage();
 				break;
 		}
 	}
@@ -273,4 +274,5 @@ void NutellaServer::usage() {
 	std::cout << "\t\t-v Print verbose output" << std::endl;
 	std::cout << "\t\t-s Show FPS during client playback" << std::endl;
 	std::cout << "\t\t-h Print this debug information" << std::endl;
+	exit(104);
 }
