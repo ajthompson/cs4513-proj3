@@ -124,6 +124,8 @@ void NutellaSearch::run() {
 			continue;
 		}
 
+		int received_response = 0;
+
 		// set up timeout timer
 		setitimer(ITIMER_REAL, &timer, NULL);
 
@@ -148,6 +150,8 @@ void NutellaSearch::run() {
 					std::cout << "\tHost:  " << host << std::endl;
 					std::cout << "\tPort:  " << port << std::endl;
 				}
+
+				received_response = 1;
 				break;
 			}
 		} while (NutellaSearch::check_mcast);
@@ -155,9 +159,11 @@ void NutellaSearch::run() {
 		if (vflag)
 			std::cout << "NutellaSearch: Creating NutellaPlayer" << std::endl;
 
-		// create the Nutella Player
-		NutellaPlayer *np = new NutellaPlayer(title, host, atoi(port.c_str()), this->fps, this->fps_flag, this->tflag, this->vflag);
-		np->run();
+		if (received_response) {
+			// create the Nutella Player
+			NutellaPlayer *np = new NutellaPlayer(title, host, atoi(port.c_str()), this->fps, this->fps_flag, this->tflag, this->vflag);
+			np->run();
+		}
 	}
 }
 
