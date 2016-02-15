@@ -57,7 +57,7 @@ void NutellaPlayer::run() {
 	while (this->sock >= 0 || this->frame_queue.size() > 0) {
 		if (this->sock >= 0) {
 			// we are still connected with the streamer
-			receiveStream();
+			this->receiveStream();
 		}
 
 		this->mp->printFrame(&(this->frame_queue));
@@ -114,6 +114,8 @@ void NutellaPlayer::receiveStream() {
 	bytes_read = recv(this->sock, buffer, BUFSIZE, MSG_DONTWAIT);
 
 	if (bytes_read > 0) {
+		if (this->vflag)
+			std::cout << "NutellaPlayer: Read " << bytes_read << " bytes" << std::endl;
 		// create a string, adding the leftovers from previous recv's
 		// that could not be parsed into frames
 		temp_buffer = partial_frame + std::string(buffer, bytes_read);
@@ -132,13 +134,20 @@ void NutellaPlayer::receiveStream() {
 
 				// update last_pos to omit 'end\n'
 				last_pos += 3;
+
+				if (this->vflag)
+					std::cout << "NutellaPlayer: Finished frame" << std::endl;
 			} else {
 				// there are no remaining end delimiters
 				// copy the remaining to partial_frame
 				this->partial_frame = std::string(temp_buffer, last_pos, end_pos);
+				if (this->vflag)
+					std::cout << "NutellaPlayer: Frame incomplete" << std::endl;
 			}
 		}
 	} else if (bytes_read == 0) {
+		if (this->vflag)
+			std::cout << "NutellaPlayer: Disconnecting" << std::endl;
 		// the streamer has disconnected, so the socket should be closed
 		this->disconnect();
 	} else {
