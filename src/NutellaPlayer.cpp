@@ -27,6 +27,7 @@
 NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host, 
 		int streamer_port, unsigned long fps, int fps_flag, int tflag, int vflag)
 		: tflag(tflag), vflag(vflag), sock(-1), mp(NULL), partial_frame("") {
+	this->title = title;
 
 	/* Connect to the streamer */
 	this->connectToStreamer(streamer_host, streamer_port);
