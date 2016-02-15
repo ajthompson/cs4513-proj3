@@ -255,6 +255,9 @@ int NutellaServer::handleQuery() {
 
 	received_title = std::string(buffer, bytes_recv);
 
+	if (this->vflag)
+		std::cout << "Received title: " << received_title << std::endl;
+
 	if (std::binary_search(this->titles.begin(), this->titles.end(), received_title)) {
 		std::string response = this->nstream->getResponseMessage(received_title);
 		msend(this->r_msock, response.c_str(), response.size());

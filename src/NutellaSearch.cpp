@@ -139,6 +139,13 @@ void NutellaSearch::run() {
 
 				std::getline(received, host);
 				std::getline(received, port);
+
+				if (this->vflag) {
+					std::cout << "Received response:" << std::endl;
+					std::cout << "\tTitle: " << recv_title << std::endl;
+					std::cout << "\tHost:  " << host << std::endl;
+					std::cout << "\tPort:  " << port << std::endl;
+				}
 				break;
 			}
 		} while (NutellaSearch::check_mcast);
