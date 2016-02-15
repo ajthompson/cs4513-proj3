@@ -15,6 +15,7 @@
 #include <csignal>
 
 class MoviePlayer {
+	int tflag, vflag;
 	unsigned long fps;
 	int show_fps;
 
@@ -25,7 +26,7 @@ public:
 	// indicate that we should publish a new frame
 	static volatile sig_atomic_t refresh_display;
 	// factory, to properly initialize refresh
-	static MoviePlayer *makeMoviePlayer(unsigned long fps, int show_fps);
+	static MoviePlayer *makeMoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag);
 
 	~MoviePlayer();
 
@@ -33,7 +34,7 @@ public:
 	void printFrame(std::queue<std::string> *frame_queue);
 
 private:
-	MoviePlayer(unsigned long fps, int show_fps);				// constructor
+	MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag);	// constructor
 
 	double computeFPS();
 	static void handle_timer(int sig);	// SIGALARM handler

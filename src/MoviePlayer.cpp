@@ -34,13 +34,15 @@ volatile sig_atomic_t MoviePlayer::refresh_display;
  * frames are displayed. Based on:
  * http://www.informit.com/articles/article.aspx?p=23618&seqNum=14
  */
-MoviePlayer::MoviePlayer(unsigned long fps, int show_fps) {
+MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) {
 	struct sigaction sa;
 	struct itimerval timer;
 	long usecs;
 
 	this->fps = fps;
 	this->show_fps = show_fps;
+	this->tflag = tflag;
+	this->vflag = vflag;
 
 	memset(&(this->last_frame_time), 0, sizeof(this->last_frame_time));
 	gettimeofday(&(this->last_frame_time), NULL);
@@ -66,6 +68,9 @@ MoviePlayer::~MoviePlayer() {
 	// disable the signal handler
 	signal(SIGALRM, SIG_DFL);
 
+	if (this->vflag)
+		std::cout << "Prepping terminal" << std::endl;
+
 	// clear the terminal and any set attributes
 	this->prepTerminal();
 	std::cout << "\x1B[0m" << std::flush;
@@ -79,11 +84,8 @@ MoviePlayer::~MoviePlayer() {
  * 
  * @return     A pointer to the new MoviePlayer
  */
-MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps) {
-	MoviePlayer *mp = new MoviePlayer(fps, show_fps);
-
-	// set the refresh variable
-	// MoviePlayer::refresh_display = 0;
+MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) {
+	MoviePlayer *mp = new MoviePlayer(fps, show_fps, tflag, vflag);
 
 	return mp;
 }

@@ -35,7 +35,7 @@ NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host,
 	this->sendTitle();
 
 	/* Create the movieplayer */
-	this->mp = MoviePlayer::makeMoviePlayer(fps, fps_flag);
+	this->mp = MoviePlayer::makeMoviePlayer(fps, fps_flag, tflag, vflag);
 	this->mp->prepTerminal();
 }
 
@@ -95,6 +95,8 @@ void NutellaPlayer::disconnect() {
 }
 
 void NutellaPlayer::sendTitle() {
+	if (this->vflag)
+		std::cout << "NutellaPlayer: Sending title to streamer: " << this->title << std::endl;
 	ssize_t bytes_sent = send(this->sock, this->title.c_str(), this->title.size(), 0);
 	if (bytes_sent < 0)
 		perror("send()");

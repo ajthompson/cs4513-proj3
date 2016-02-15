@@ -232,6 +232,9 @@ void NutellaStreamer::receiveTitle() {
 	}
 
 	this->moviepath += title;
+
+	if (vflag)
+		std::cout << "NutellaStreamer: Received title " << this->moviepath << std::endl;
 }
 
 /**
