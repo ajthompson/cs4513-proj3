@@ -16,6 +16,7 @@
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "proj3.h"
 #include "NutellaStreamer.hpp"
