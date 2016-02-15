@@ -95,7 +95,7 @@ NutellaStreamer::NutellaStreamer(std::string dir, int vflag)
 			&& ifa->ifa_addr->sa_family == AF_INET) {
 			// we've found an IP address
 			this->address = std::string(inet_ntoa(addr->sin_addr));
-			// break;
+			break;
 		}
 	}
 }
