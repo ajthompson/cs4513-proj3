@@ -161,7 +161,7 @@ void NutellaSearch::run() {
 
 		if (received_response) {
 			// create the Nutella Player
-			NutellaPlayer *np = new NutellaPlayer(title, host, atoi(port.c_str()), this->fps, this->fps_flag, this->tflag, this->vflag);
+			NutellaPlayer *np = new NutellaPlayer(recv_title, host, atoi(port.c_str()), this->fps, this->fps_flag, this->tflag, this->vflag);
 			np->run();
 		}
 	}

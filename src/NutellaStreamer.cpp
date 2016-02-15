@@ -183,7 +183,7 @@ pid_t NutellaStreamer::waitForConnection() {
 		}
 
 		if (this->vflag)
-			std::cout << "Accepted connection" << std::endl;
+			std::cout << "Accepted connection on socket " << this->s_socket << std::endl;
 
 		// fork the process
 		pid = fork();
@@ -227,9 +227,24 @@ void NutellaStreamer::receiveTitle() {
 
 			try_count++;
 		} else if (bytes_recv > 0) {
+			if (vflag)
+				std::cout << "Received message " << buffer << " of " << bytes_recv << " bytes" << std::endl;
 			title += std::string(buffer, bytes_recv);
 		}
 	}
+	// bytes_recv = recv(this->s_socket, buffer, BUFSIZE, 0);
+	// if (bytes_recv > 0) {
+	// 	title = std::string(buffer, bytes_recv);
+	// 	if (vflag) {
+	// 		std::cout << "Received title: " << std::endl;
+	// 		std::cout << "\tbytes_recv: " << bytes_recv << std::endl;
+	// 		std::cout << "\ttitle:      " << title << std::endl;
+	// 	}
+	// } else if (bytes_recv < 0) {
+	// 	std::cout << "Failed to receive message" << std::endl;
+	// } else {
+	// 	std::cout << "Received " << bytes_recv << " bytes" << std::endl;
+	// }
 
 	this->moviepath += title;
 
