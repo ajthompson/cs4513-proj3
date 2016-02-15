@@ -78,13 +78,24 @@ NutellaStreamer::NutellaStreamer(std::string dir, int vflag)
 		std::cout << "Getting network interfaces" << std::endl;
 
 	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-		std::cout << "\t" << ifa->ifa_name << std::endl;
-		std::cout << "\t\t" << inet_ntoa(((struct sockaddr_in *)(ifa->ifa_addr))->sin_addr) << std::endl;
-		if (strcmp(ifa->ifa_name, "lo") != 0) {
+		struct sockaddr_in *addr = (struct sockaddr_in *) ifa->ifa_addr;
+
+		if (vflag) {
+			std::cout << "\t" << ifa->ifa_name << std::endl;
+			std::cout << "\t\t" << inet_ntoa(addr->sin_addr) << std::endl;
+			if (ifa->ifa_addr->sa_family == AF_PACKET)
+				std::cout << "\t\tAF_PACKET" << std::endl;
+			else if (ifa->ifa_addr->sa_family == AF_INET)
+				std::cout << "\t\tAF_INET" << std::endl;
+			else if (ifa->ifa_addr->sa_family == AF_INET6)
+				std::cout << "\t\tAF_INET6" << std::endl;
+		}
+
+		if ((strncmp(ifa->ifa_name, "eth", 3) == 0 || strncmp(ifa->ifa_name, "wlan", 3) == 0) 
+			&& ifa->ifa_addr->sa_family == AF_INET) {
 			// we've found an IP address
-			struct sockaddr_in *addr = (struct sockaddr_in *) ifa->ifa_addr;
 			this->address = std::string(inet_ntoa(addr->sin_addr));
-			break;
+			// break;
 		}
 	}
 }
