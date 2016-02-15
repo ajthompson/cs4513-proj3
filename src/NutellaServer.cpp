@@ -114,9 +114,9 @@ NutellaServer::NutellaServer(int argc, char **argv)
 			std::cout << "Passive mode enabled" << std::endl;
 		if (this->tflag)
 			std::cout << "Timer logging enabled" << std::endl;
-		if (this->dflag)
+		if (this->dflag && !cflag)
 			std::cout << "Directory " << this->moviedir << " specified by -d" << std::endl;
-		else
+		else if (!this->dflag && !cflag)
 			std::cout << "Directory " << this->moviedir << " specified by NUTELLA" << std::endl;
 		if (this->sflag && !this->pflag)
 			std::cout << "FPS display enabled" << std::endl;

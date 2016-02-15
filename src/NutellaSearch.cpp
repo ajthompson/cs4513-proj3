@@ -117,7 +117,10 @@ void NutellaSearch::run() {
 		}
 
 		// multicast the title
-		msend(this->q_msock, title.c_str(), title.size());
+		if (msend(this->q_msock, title.c_str(), title.size()) == -1) {
+			perror("msend()");
+			continue;
+		}
 
 		// set up timeout timer
 		setitimer(ITIMER_REAL, &timer, NULL);
