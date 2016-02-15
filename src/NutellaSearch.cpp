@@ -70,6 +70,11 @@ NutellaSearch::NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vfl
 		std::cout << "Failed to create multicast socket at port " << DEFAULT_MCAST_RESPONSE_PORT;
 		std::cout << " of " << DEFAULT_MCAST_RESPONSE_ADDR << std::endl;
 	}
+
+	if (this->vflag) {
+		std::cout << "MCast Query Socket: " << this->q_msock << std::endl;
+		std::cout << "MCast Response Socket: " << this->r_msock << std::endl;
+	}
 }
 
 /**
@@ -77,8 +82,10 @@ NutellaSearch::NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vfl
  */
 NutellaSearch::~NutellaSearch() {
 	// we only use the sockets inside of this class
-	msockdestroy(this->q_msock);
-	msockdestroy(this->r_msock);
+	if (this->q_msock >= 0)
+		msockdestroy(this->q_msock);
+	if (this->r_msock >= 0)
+		msockdestroy(this->r_msock);
 }
 
 void NutellaSearch::run() {
