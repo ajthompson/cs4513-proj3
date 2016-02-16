@@ -136,7 +136,9 @@ void NutellaPlayer::receiveStream() {
 		}
 
 		// find any end delimiters
-		while ((end_pos = temp_buffer.find("end\n", last_pos)) != std::string::npos) {
+		while (1) {
+
+			end_pos = temp_buffer.find("end\n", last_pos);
 
 			if (end_pos != std::string::npos) {
 				if (this->vflag) {
@@ -165,6 +167,7 @@ void NutellaPlayer::receiveStream() {
 					std::cout << "NutellaPlayer: Frame incomplete:" << std::endl;
 					std::cout << this->partial_frame;
 				}
+				break;
 			}
 		}
 	} else if (bytes_read == 0) {
