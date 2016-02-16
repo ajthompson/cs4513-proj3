@@ -135,7 +135,7 @@ void NutellaPlayer::receiveStream() {
 		}
 
 		// find any end delimiters
-		while ((end_pos = temp_buffer.find("end\n\n\n", last_pos)) != std::string::npos) {
+		while ((end_pos = temp_buffer.find("end\n", last_pos)) != std::string::npos) {
 
 			if (end_pos != std::string::npos) {
 				if (this->vflag) {
@@ -149,8 +149,8 @@ void NutellaPlayer::receiveStream() {
 				// add to the frame queue
 				this->frame_queue.push(temp_frame);
 
-				// update last_pos to omit 'end\n\n\n'
-				last_pos = end_pos + 6;
+				// update last_pos to omit 'end\n'
+				last_pos = end_pos + 4;
 
 				if (this->vflag) {
 					std::cout << "NutellaPlayer: Finished frame" << std::endl;
