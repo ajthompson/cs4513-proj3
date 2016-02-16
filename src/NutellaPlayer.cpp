@@ -145,7 +145,7 @@ void NutellaPlayer::receiveStream() {
 					std::cout << "\tend_pos:  " << end_pos << std::endl;
 				}
 				// create a new substring from last_pos to the beginning of 'end'
-				temp_frame = std::string(temp_buffer, last_pos, end_pos);
+				temp_frame = std::string(temp_buffer, last_pos, end_pos - last_pos);
 
 				// add to the frame queue
 				this->frame_queue.push(temp_frame);
