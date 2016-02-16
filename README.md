@@ -87,6 +87,9 @@ Design Notes:
 		The movie file must end with a delimiter, otherwise the final frame before
 		EOF will not be output.
 
+		Movie files must end in a '.txt' extension. However, when prompted for a movie name
+		by the client, do not include the extension.
+
 Usage:
 
 	Building:
@@ -128,3 +131,6 @@ Usage:
 		And for a client-only instance:
 
 		./bin/nutella -c -s -f 60
+
+		NOTE: When running the client, use the movie filename WITHOUT the '.txt.'
+		extension
