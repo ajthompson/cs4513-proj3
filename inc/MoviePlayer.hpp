@@ -18,6 +18,7 @@ class MoviePlayer {
 	int tflag, vflag;
 	unsigned long fps;
 	int show_fps;
+	unsigned long secs, usecs;
 
 	// fps logging
 	struct timeval last_frame_time;

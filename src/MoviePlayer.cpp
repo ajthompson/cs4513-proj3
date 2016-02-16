@@ -9,6 +9,7 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <queue>
@@ -37,21 +38,28 @@ volatile sig_atomic_t MoviePlayer::refresh_display;
 MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) {
 	struct sigaction sa;
 	struct itimerval timer;
-	long secs = 0, usecs = 0;
 
 	this->fps = fps;
 	this->show_fps = show_fps;
 	this->tflag = tflag;
 	this->vflag = vflag;
+	this->secs = 0;
+	this->usecs = 0;
 
 	memset(&(this->last_frame_time), 0, sizeof(this->last_frame_time));
 	gettimeofday(&(this->last_frame_time), NULL);
 
 	// calculate the interval to achieve the given fps
 	if (fps <= 1) {
-		secs = 1;
+		this->secs = 1;
 	} else {
-		usecs = fps / 1000000;
+		this->usecs = (unsigned long)floor((double)fps / 1000000.0);
+	}
+
+	if (this->vflag) {
+		std::cout << "MoviePlayer: Computed delays for a framerate of " << fps << "Hz" << std::endl;
+		std::cout << "\tseconds:  " << this->secs << std::endl;
+		std::cout << "\tuseconds: " << this->usecs << std::endl;
 	}
 
 	// set up the timer handler to handle SIGALRM
@@ -99,25 +107,17 @@ MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps, int t
  */
 void MoviePlayer::prepTerminal() {
 	struct itimerval timer;
-	unsigned long secs = 0, usecs = 0;
-
-	// calculate the interval to achieve the given fps
-	if (fps <= 1) {
-		secs = 1;
-	} else {
-		usecs = fps / 1000000;
-	}
-
 	// configure the timer
-	timer.it_value.tv_sec = secs;
-	timer.it_value.tv_usec = usecs;
-	timer.it_interval.tv_sec = secs;
-	timer.it_interval.tv_usec = usecs;
+	timer.it_value.tv_sec = this->secs;
+	timer.it_value.tv_usec = this->usecs;
+	timer.it_interval.tv_sec = this->secs;
+	timer.it_interval.tv_usec = this->usecs;
 
 	setitimer(ITIMER_REAL, &timer, NULL);
 	MoviePlayer::refresh_display = 1;
 
-	std::cout << "\x1B[2J\x1B[1;1H" << std::flush;
+	if (!vflag)
+		std::cout << "\x1B[2J\x1B[1;1H" << std::flush;
 }
 
 /**
@@ -136,7 +136,8 @@ void MoviePlayer::clearAttributes() {
 
 	MoviePlayer::refresh_display = 0;
 
-	std::cout << "\x1B[2J\x1B[1;1H\x1B[0m" << std::flush;
+	if (!vflag)
+		std::cout << "\x1B[2J\x1B[1;1H\x1B[0m" << std::flush;
 }
 
 /**
@@ -149,19 +150,23 @@ void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
 	if (refresh_display && frame_queue->size() > 0) {
 		MoviePlayer::refresh_display = 0;
 
-		// reset the cursor to the top left and clear the display
-		std::cout << "\x1B[2J\x1B[1;1H";
+		// when in verbose mode, we disable movie-like playback
+		// as this erases the verbose info
+		if (!vflag) {
+			// reset the cursor to the top left and clear the display
+			std::cout << "\x1B[2J\x1B[1;1H";
 
-		// print the frame
-		std::cout << frame_queue->front();
+			// print the frame
+			std::cout << frame_queue->front();
 
-		if (this->show_fps) {
-			// go to the next line, and clear to the end of the terminal
-			// this will remove the previous fps value
-			std::cout << "\n" << this->computeFPS() << " fps";
+			if (this->show_fps) {
+				// go to the next line, and clear to the end of the terminal
+				// this will remove the previous fps value
+				std::cout << "\n" << this->computeFPS() << " fps";
+			}
+
+			std::cout << std::flush;
 		}
-
-		std::cout << std::flush;
 
 		frame_queue->pop();
 	}
