@@ -158,6 +158,10 @@ void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
 	}
 }
 
+sig_atomic_t MoviePlayer::getRefresh() {
+	return MoviePlayer::refresh_display;
+}
+
 /**
  * Compute the instantaneous fps, and then update the stored time the frame was
  * printed.

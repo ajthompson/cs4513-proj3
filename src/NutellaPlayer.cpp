@@ -159,7 +159,7 @@ void NutellaPlayer::receiveStream() {
 			// if the movie player is ready to display another frame
 			// and we have one ready, put everything into the partial frame storage
 			// so we don't impact the framerate too much
-			if (MoviePlayer::refresh_display && this->frame_queue.size > 0) {
+			if (this->mp->getRefresh() == 1 && this->frame_queue.size() > 0) {
 				end_pos = std::string::npos;
 			}
 

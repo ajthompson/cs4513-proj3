@@ -32,6 +32,7 @@ public:
 	void prepTerminal();
 	void clearAttributes();
 	void printFrame(std::queue<std::string> *frame_queue);
+	sig_atomic_t getRefresh();
 
 private:
 	double computeFPS();
