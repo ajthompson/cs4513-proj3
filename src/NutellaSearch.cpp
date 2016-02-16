@@ -104,10 +104,10 @@ void NutellaSearch::run() {
 	timer.it_interval.tv_usec = 0;
 
 	while (1) {
-		std::cout << std::flush;
 		// prompt the user for input
 		std::cout << "Enter movie title, or 'quit' to exit: " << std::flush;
 
+		std::cin.clear();
 		std::getline(std::cin, title);
 
 		if (title.size() <= 0) {
