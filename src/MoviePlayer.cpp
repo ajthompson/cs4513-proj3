@@ -26,7 +26,6 @@
 volatile sig_atomic_t MoviePlayer::refresh_display;
 #endif
 
-
 /**
  * Constructor
  *
@@ -73,6 +72,8 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) 
 	timer.it_interval.tv_usec = usecs;
 
 	setitimer(ITIMER_REAL, &timer, NULL);
+
+	MoviePlayer::refresh_display = 1;
 }
 
 MoviePlayer::~MoviePlayer() {
@@ -84,20 +85,6 @@ MoviePlayer::~MoviePlayer() {
 
 	// clear the terminal and any set attributes
 	this->clearAttributes();
-}
-
-/**
- * Factory function to create the MoviePlayer and set the refresh variable
- * 
- * @param  fps      The desired framerate in frames per second
- * @param  show_fps If not 0, the fps will be printed below the image
- * 
- * @return     A pointer to the new MoviePlayer
- */
-MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) {
-	MoviePlayer *mp = new MoviePlayer(fps, show_fps, tflag, vflag);
-
-	return mp;
 }
 
 /**

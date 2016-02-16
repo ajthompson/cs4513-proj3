@@ -198,7 +198,7 @@ void NutellaServer::run() {
 
 		if (pid == 0) {		// child
 			this->pids.clear();		// the child has no children yet
-			nsearch = NutellaSearch::makeNutellaSearch(this->fps, this->sflag, this->tflag, this->vflag);
+			nsearch = new NutellaSearch(this->fps, this->sflag, this->tflag, this->vflag);
 			nsearch->run();
 		} else if (pid > 0) {
 			this->pids.push_back(pid);

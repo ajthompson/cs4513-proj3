@@ -26,9 +26,7 @@ class MoviePlayer {
 public:
 	// indicate that we should publish a new frame
 	static volatile sig_atomic_t refresh_display;
-	// factory, to properly initialize refresh
-	static MoviePlayer *makeMoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag);
-
+	MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag);	// constructor
 	~MoviePlayer();
 
 	void prepTerminal();
@@ -36,8 +34,6 @@ public:
 	void printFrame(std::queue<std::string> *frame_queue);
 
 private:
-	MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag);	// constructor
-
 	double computeFPS();
 	static void handle_timer(int sig);	// SIGALARM handler
 };

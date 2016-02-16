@@ -27,23 +27,12 @@ volatile sig_atomic_t NutellaSearch::check_mcast;
 #endif
 
 /**
- * Factory method to initialize the static member of NutellaSearch
- * 
- * @param  bsock The multicast broadcast socket
- * @param  lsock The multicast listen socket
- * @return       A pointer to a NutellaSearch object
- */
-NutellaSearch *NutellaSearch::makeNutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag) {
-	// NutellaSearch::check_mcast = 1;
-
-	return new NutellaSearch(fps, fps_flag, tflag, vflag);
-}
-
-/**
  * Constructor
  */
 NutellaSearch::NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag) 
 		: tflag(tflag), vflag(vflag), q_msock(-1), r_msock(-1), fps(fps), fps_flag(fps_flag), np(NULL) {
+	NutellaSearch::check_mcast = 1;
+
 	struct sigaction sa;
 	struct itimerval timer;
 

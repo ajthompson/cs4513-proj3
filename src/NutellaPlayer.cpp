@@ -38,7 +38,7 @@ NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host,
 	this->sendTitle();
 
 	/* Create the movieplayer */
-	this->mp = MoviePlayer::makeMoviePlayer(fps, fps_flag, tflag, vflag);
+	this->mp = new MoviePlayer(fps, fps_flag, tflag, vflag);
 }
 
 /**

@@ -25,13 +25,11 @@ class NutellaSearch {
 
 public:
 	static volatile sig_atomic_t check_mcast;
-	static NutellaSearch *makeNutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag);
+	NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag);
 	~NutellaSearch();
 
 	void run();
 private:
-	NutellaSearch(unsigned long fps, int fps_flag, int tflag, int vflag);
-
 	static void handle_timeout(int sig);
 };
 
