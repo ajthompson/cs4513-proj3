@@ -25,6 +25,10 @@ class NutellaPlayer {
 
 	std::string partial_frame; // leftover frame without any end delimiters
 
+	// transfer time logging
+	struct timeval start_time;
+	double total_reception_time;
+
 public:
 	/* Constructor and Destructor */
 	NutellaPlayer(std::string title, std::string streamer_host, int streamer_port, unsigned long fps, int fps_flag, int tflag, int vflag);
@@ -38,6 +42,9 @@ private:
 	void sendTitle();
 	void receiveStream();
 	struct addrinfo getServInfo(std::string streamer_host, int streamer_port);
+
+	void setStartTime();
+	void addTimeDiff();
 };
 
 #endif

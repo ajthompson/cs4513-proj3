@@ -17,6 +17,7 @@
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "proj3.h"
@@ -28,8 +29,9 @@
  * @param port The port to bind to
  * @param dir  The directory containing the movies
  */
-NutellaStreamer::NutellaStreamer(std::string dir, int vflag) 
-		: vflag(vflag), l_socket(-1), s_socket(-1), moviepath(dir) {
+NutellaStreamer::NutellaStreamer(std::string dir, int vflag, int tflag) 
+		: vflag(vflag), tflag(tflag), l_socket(-1), s_socket(-1), moviepath(dir), 
+		total_bytes_sent(0), total_transfer_time(0.0) {
 	// setup a socket to stream
 	if ((this->l_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		perror("socket()");
@@ -107,6 +109,19 @@ NutellaStreamer::~NutellaStreamer() {
 	if (this->vflag)
 		std::cout << "NutellaStreamer: Running destructor" << std::endl;
 	this->disconnect();
+	if (this->tflag) {		// log to file
+		std::ofstream byte_log, time_log;
+
+		// log the number of bytes written
+		byte_log.open("log/bytes_transferred.log", std::ios::out | std::ios::app);
+		byte_log << this->total_bytes_sent << std::endl;
+		byte_log.close();
+
+		// log the time taken in seconds
+		time_log.open("log/total_transfer_time.log", std::ios::out | std::ios::app);
+		time_log << this->total_transfer_time << std::endl;
+		time_log.close();
+	}
 }
 
 /**
@@ -136,6 +151,8 @@ void NutellaStreamer::run() {
  * as it is forked to be able to wait for connections
  */
 void NutellaStreamer::deactivate() {
+	// prevent timing logging
+	this->tflag = 0;
 	this->disconnect();
 }
 
@@ -242,6 +259,8 @@ void NutellaStreamer::streamMovie() {
 	// open the movie file
 	std::ifstream movie(this->moviepath.c_str());
 
+	if (this->tflag)
+		this->setStartTime();
 	for (std::string line; getline(movie, line);) {
 		int end_cmp, stop_cmp;
 
@@ -267,6 +286,8 @@ void NutellaStreamer::streamMovie() {
 			std::cout << "NutellaStreamer: Adding line: " << line << std::endl;
 		}
 	}
+	if (this->tflag)
+		this->addTimeDiff();
 
 	// close the file and disconnect
 	movie.close();
@@ -285,6 +306,8 @@ void NutellaStreamer::sendFrame(std::string frame) {
 	ssize_t bytes_sent = send(this->s_socket, frame.c_str(), frame.size(), 0);
 	if (this->vflag)
 		std::cout << "NutellaStreamer: Sent " << bytes_sent << " bytes" << std::endl;
+	if (this->tflag)	// packet paylod + TCP header (20 bytes) + IP header (20 bytes) + Ethernet frame (24 bytes)
+		this->total_bytes_sent += bytes_sent + 64;
 	if (bytes_sent < 0)
 		perror("send()");
 }
@@ -301,4 +324,28 @@ void NutellaStreamer::disconnect() {
 		close(s_socket);
 		s_socket = -1;
 	}
+}
+
+/**
+ * Set the stored start time
+ */
+void NutellaStreamer::setStartTime() {
+	memset(&(this->start_time), 0, sizeof(this->start_time));
+	gettimeofday(&(this->start_time), NULL);
+}
+
+/**
+ * Compute the change in transfer time and add it to the total
+ */
+void NutellaStreamer::addTimeDiff() {
+	double s_diff, us_diff;
+	struct timeval finish_time;
+	memset(&finish_time, 0, sizeof(finish_time));
+	gettimeofday(&finish_time, NULL);
+
+	// compute the difference
+	s_diff = (double) finish_time.tv_sec - this->start_time.tv_sec;
+	us_diff = (double) finish_time.tv_usec - this->start_time.tv_usec;
+
+	this->total_transfer_time += s_diff + (us_diff / 1000000);
 }

@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -17,6 +18,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -48,6 +50,15 @@ NutellaPlayer::~NutellaPlayer() {
 	if (this->sock >= 0)
 		this->disconnect();
 	delete this->mp;
+
+	if (this->tflag) {		// log to file
+		std::ofstream time_log;
+
+		// log the time taken in seconds
+		time_log.open("log/total_reception_time.log", std::ios::out | std::ios::app);
+		time_log << this->total_reception_time << std::endl;
+		time_log.close();
+	}
 }
 
 void NutellaPlayer::run() {
@@ -118,6 +129,8 @@ void NutellaPlayer::receiveStream() {
 	size_t end_pos = 0, last_pos = 0;
 	ssize_t bytes_read = 0;
 
+	if (this->tflag)
+		this->setStartTime();
 	bytes_read = recv(this->sock, buffer, BUFSIZE, MSG_DONTWAIT);
 
 	if (bytes_read > 0) {
@@ -167,6 +180,8 @@ void NutellaPlayer::receiveStream() {
 					std::cout << "NutellaPlayer: Frame incomplete:" << std::endl;
 					std::cout << this->partial_frame << std::endl;
 				}
+				if (this->tflag)
+					this->addTimeDiff();
 				break;
 			}
 		}
@@ -206,3 +221,27 @@ struct addrinfo NutellaPlayer::getServInfo(std::string streamer_host, int stream
 
 	return *servInfo;
 } 
+
+/**
+ * Set the stored start time
+ */
+void NutellaPlayer::setStartTime() {
+	memset(&(this->start_time), 0, sizeof(this->start_time));
+	gettimeofday(&(this->start_time), NULL);
+}
+
+/**
+ * Compute the change in transfer time and add it to the total
+ */
+void NutellaPlayer::addTimeDiff() {
+	double s_diff, us_diff;
+	struct timeval finish_time;
+	memset(&finish_time, 0, sizeof(finish_time));
+	gettimeofday(&finish_time, NULL);
+
+	// compute the difference
+	s_diff = (double) finish_time.tv_sec - this->start_time.tv_sec;
+	us_diff = (double) finish_time.tv_usec - this->start_time.tv_usec;
+
+	this->total_reception_time += s_diff + (us_diff / 1000000);
+}
