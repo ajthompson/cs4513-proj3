@@ -68,8 +68,8 @@ void NutellaPlayer::run() {
 	}
 
 	// reset the terminal
-	this->mp->clearAttributes();
-	this->mp->prepTerminal();
+	// this->mp->clearAttributes();
+	// this->mp->prepTerminal();
 
 	if (vflag)
 		std::cout << "NutellaPlayer: run() finished" << std::endl;
