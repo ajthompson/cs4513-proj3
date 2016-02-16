@@ -51,15 +51,6 @@ NutellaPlayer::~NutellaPlayer() {
 		this->disconnect();
 	if (this->mp != NULL)
 		delete this->mp;
-
-	if (this->tflag) {		// log to file
-		std::ofstream time_log;
-
-		// log the time taken in seconds
-		time_log.open("log/total_reception_time.log", std::ios::out | std::ios::app);
-		time_log << this->total_reception_time << std::endl;
-		time_log.close();
-	}
 }
 
 void NutellaPlayer::run() {
@@ -81,6 +72,17 @@ void NutellaPlayer::run() {
 
 	// reset the terminal
 	this->mp->clearAttributes();
+
+	if (this->tflag) {		// log to file
+		std::ofstream time_log;
+
+		// log the time taken in seconds
+		time_log.open("log/total_reception_time.log", std::ios::out | std::ios::app);
+		time_log << this->total_reception_time << std::endl;
+		time_log.close();
+
+		this->total_reception_time = 0;
+	}
 
 	if (vflag)
 		std::cout << "NutellaPlayer: run() finished" << std::endl;

@@ -109,19 +109,6 @@ NutellaStreamer::~NutellaStreamer() {
 	if (this->vflag)
 		std::cout << "NutellaStreamer: Running destructor" << std::endl;
 	this->disconnect();
-	if (this->tflag) {		// log to file
-		std::ofstream byte_log, time_log;
-
-		// log the number of bytes written
-		byte_log.open("log/bytes_transferred.log", std::ios::out | std::ios::app);
-		byte_log << this->total_bytes_sent << std::endl;
-		byte_log.close();
-
-		// log the time taken in seconds
-		time_log.open("log/total_transfer_time.log", std::ios::out | std::ios::app);
-		time_log << this->total_transfer_time << std::endl;
-		time_log.close();
-	}
 }
 
 /**
@@ -288,6 +275,24 @@ void NutellaStreamer::streamMovie() {
 	}
 	if (this->tflag)
 		this->addTimeDiff();
+
+	if (this->tflag) {		// log to file
+		std::ofstream byte_log, time_log;
+
+		// log the number of bytes written
+		byte_log.open("log/bytes_transferred.log", std::ios::out | std::ios::app);
+		byte_log << this->total_bytes_sent << std::endl;
+		byte_log.close();
+
+		// log the time taken in seconds
+		time_log.open("log/total_transfer_time.log", std::ios::out | std::ios::app);
+		time_log << this->total_transfer_time << std::endl;
+		time_log.close();
+
+		// reset the bytes sent and transfer time
+		this->total_bytes_sent = 0;
+		this->total_transfer_time = 0;
+	}
 
 	// close the file and disconnect
 	movie.close();

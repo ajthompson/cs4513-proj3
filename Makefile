@@ -32,7 +32,7 @@ NUTELLA_OBJECTS = $(__NUTELLA_CXX_OBJECTS) $(__NUTELLA_C___OBJECTS)
 
 L_FLAGS = 
 
-__CXX_FLAGS = -Werror -Wall -Iinc -g
+__CXX_FLAGS = -Werror -Wall -Iinc
 CXX_FLAGS = $(__CXX_FLAGS)
 
 __C_FLAGS = -Werror -Wall -Iinc
