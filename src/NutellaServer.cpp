@@ -279,12 +279,13 @@ int NutellaServer::handleQuery() {
 void NutellaServer::usage() {
 	std::cout << "nutella - P2P ASCII movie streaming" << std::endl;
 	std::cout << "Usage: " << std::endl;
-	std::cout << "\tnutella [{-p | --passive} | {-c | --client-only}] [-t | --timed] [-d | --directory <directory>] [-v | --verbose] [-s --show-fps] [-h | --help]" << std::endl;
+	std::cout << "\tnutella [{-p | --passive} | {-c | --client-only}] [-t | --timed] [-d | --directory <directory>] [-v | --verbose] [-f | --fps] [-s | --show-fps] [-h | --help]" << std::endl;
 	std::cout << "\t\t-p Run in passive mode and do not act as a client" << std::endl;
 	std::cout << "\t\t-c Run in client only mode" << std::endl;
 	std::cout << "\t\t-t Log timing information to the ./log folder" << std::endl;
 	std::cout << "\t\t-d Specify the movie directory" << std::endl;
 	std::cout << "\t\t-v Print verbose output" << std::endl;
+	std::cout << "\t\t-f Specify the framerate in frames per second" << std::endl;
 	std::cout << "\t\t-s Show FPS during client playback" << std::endl;
 	std::cout << "\t\t-h Print this debug information" << std::endl;
 	exit(104);
