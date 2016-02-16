@@ -54,7 +54,7 @@ NutellaPlayer::~NutellaPlayer() {
 void NutellaPlayer::run() {
 	if (this->vflag)
 		std::cout << "NutellaPlayer: run() started" << std::endl;
-	while (this->sock >= 0 /*|| this->frame_queue.size() > 0*/) {
+	while (this->sock >= 0 || this->frame_queue.size() > 0) {
 		if (this->sock >= 0) {
 			// if (this->vflag)
 			// 	std::cout << "NutellaPlayer: Receiving from streamer" << std::endl;
