@@ -161,8 +161,10 @@ void NutellaPlayer::receiveStream() {
 				// there are no remaining end delimiters
 				// copy the remaining to partial_frame
 				this->partial_frame = std::string(temp_buffer, last_pos);
-				// if (this->vflag)
-				// 	std::cout << "NutellaPlayer: Frame incomplete" << std::endl;
+				if (this->vflag) {
+					std::cout << "NutellaPlayer: Frame incomplete:" << std::endl;
+					std::cout << this->partial_frame;
+				}
 			}
 		}
 	} else if (bytes_read == 0) {
