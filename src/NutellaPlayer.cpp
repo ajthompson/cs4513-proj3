@@ -37,7 +37,6 @@ NutellaPlayer::NutellaPlayer(std::string title, std::string streamer_host,
 
 	/* Create the movieplayer */
 	this->mp = MoviePlayer::makeMoviePlayer(fps, fps_flag, tflag, vflag);
-	this->mp->prepTerminal();
 }
 
 /**
@@ -52,6 +51,7 @@ NutellaPlayer::~NutellaPlayer() {
 }
 
 void NutellaPlayer::run() {
+	this->mp->prepTerminal();
 	if (this->vflag)
 		std::cout << "NutellaPlayer: run() started" << std::endl;
 	while (this->sock >= 0 || this->frame_queue.size() > 0) {
@@ -68,8 +68,7 @@ void NutellaPlayer::run() {
 	}
 
 	// reset the terminal
-	// this->mp->clearAttributes();
-	// this->mp->prepTerminal();
+	this->mp->clearAttributes();
 
 	if (vflag)
 		std::cout << "NutellaPlayer: run() finished" << std::endl;
