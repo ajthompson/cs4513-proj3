@@ -150,10 +150,10 @@ void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
 		MoviePlayer::refresh_display = 0;
 
 		// reset the cursor to the top left and clear the display
-		// std::cout << "\x1B[2J\x1B[1;1H";
+		std::cout << "\x1B[2J\x1B[1;1H";
 
 		// print the frame
-		// std::cout << frame_queue->front();
+		std::cout << frame_queue->front();
 
 		if (this->show_fps) {
 			// go to the next line, and clear to the end of the terminal
@@ -161,7 +161,7 @@ void MoviePlayer::printFrame(std::queue<std::string> *frame_queue) {
 			std::cout << "\n" << this->computeFPS() << " fps";
 		}
 
-		// std::cout << std::flush;
+		std::cout << std::flush;
 
 		frame_queue->pop();
 	}

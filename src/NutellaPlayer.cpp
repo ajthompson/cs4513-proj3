@@ -165,7 +165,7 @@ void NutellaPlayer::receiveStream() {
 				this->partial_frame = std::string(temp_buffer, last_pos);
 				if (this->vflag) {
 					std::cout << "NutellaPlayer: Frame incomplete:" << std::endl;
-					std::cout << this->partial_frame;
+					std::cout << this->partial_frame << std::endl;
 				}
 				break;
 			}
