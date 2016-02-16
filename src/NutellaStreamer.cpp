@@ -278,6 +278,10 @@ void NutellaStreamer::streamMovie() {
  * @param frame A string consisting of a frame of the movie
  */
 void NutellaStreamer::sendFrame(std::string frame) {
+	if (this->vflag) {
+		std::cout << "NutellaStreamer: Sending:" << std::endl;
+		std::cout << frame << std::endl;
+	}
 	ssize_t bytes_sent = send(this->s_socket, frame.c_str(), frame.size(), 0);
 	if (this->vflag)
 		std::cout << "NutellaStreamer: Sent " << bytes_sent << " bytes" << std::endl;

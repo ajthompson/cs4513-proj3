@@ -148,7 +148,7 @@ void NutellaPlayer::receiveStream() {
 				// add to the frame queue
 				this->frame_queue.push(temp_frame);
 
-				// update last_pos to omit 'end\n'
+				// update last_pos to omit 'end'
 				last_pos += 3;
 
 				if (this->vflag) {
