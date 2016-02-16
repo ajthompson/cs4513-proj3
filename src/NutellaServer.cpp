@@ -261,7 +261,7 @@ int NutellaServer::handleQuery() {
 		return -1;
 	}
 
-	received_title = std::string(buffer, bytes_recv) + ".txt";
+	received_title = std::string(buffer, bytes_recv);
 
 	if (this->vflag)
 		std::cout << "Received title: " << received_title << std::endl;
