@@ -9,7 +9,6 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
-#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <queue>
@@ -53,7 +52,7 @@ MoviePlayer::MoviePlayer(unsigned long fps, int show_fps, int tflag, int vflag) 
 	if (fps <= 1) {
 		this->secs = 1;
 	} else {
-		this->usecs = (unsigned long)floor((double)fps / 1000000.0);
+		this->usecs = 1000000 / fps;
 	}
 
 	if (this->vflag) {
