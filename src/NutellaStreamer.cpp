@@ -247,7 +247,7 @@ void NutellaStreamer::streamMovie() {
 
 		// check if it's the end of a frame
 		if ((end_cmp = line.compare("end")) == 0 || (stop_cmp = line.compare("stop")) == 0) {
-			frame += "end";
+			frame += "end\n\n\n";
 
 			if (this->vflag)
 				std::cout << "NutellaStreamer: Sending frame ending with '" << line << "'" << std::endl;
