@@ -9,12 +9,12 @@
  * Alec Thompson - ajthompson@wpi.edu
  * February 2016
  */
+#include <csignal>
 #include <cstring>
 #include <iostream>
 #include <queue>
 #include <string>
 
-#include <signal.h>
 #include <sys/time.h>
 
 #include "proj3.h"

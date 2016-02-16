@@ -69,7 +69,7 @@ int msockcreate(int type, char const *address, int port) {
 int msockdestroy(int sock) {
 
   if (!is_valid[sock]) {
-    fprintf(stderr, "sock %d not valid\n", sock);
+    // fprintf(stderr, "sock %d not valid\n", sock);
     return -1;
   }
 
@@ -83,7 +83,7 @@ int msend(int sock, char const *message, int len) {
   int addrlen;
   
   if (!is_valid[sock]) {
-    fprintf(stderr, "sock %d not valid\n", sock);
+    // fprintf(stderr, "sock %d not valid\n", sock);
     return -1;
   }
 

@@ -88,6 +88,8 @@ NutellaSearch::~NutellaSearch() {
 		msockdestroy(this->q_msock);
 	if (this->r_msock >= 0)
 		msockdestroy(this->r_msock);
+	if (this->np != NULL)
+		delete this->np;
 }
 
 void NutellaSearch::run() {

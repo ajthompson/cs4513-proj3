@@ -49,7 +49,8 @@ NutellaPlayer::~NutellaPlayer() {
 		std::cout << "NutellaPlayer: Calling destructor" << std::endl;
 	if (this->sock >= 0)
 		this->disconnect();
-	delete this->mp;
+	if (this->mp != NULL)
+		delete this->mp;
 
 	if (this->tflag) {		// log to file
 		std::ofstream time_log;

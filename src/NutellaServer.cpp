@@ -197,11 +197,12 @@ void NutellaServer::run() {
 		pid_t pid = fork();
 
 		if (pid == 0) {		// child
+			this->pids.clear();		// the child has no children yet
 			nsearch = NutellaSearch::makeNutellaSearch(this->fps, this->sflag, this->tflag, this->vflag);
 			nsearch->run();
+		} else if (pid > 0) {
+			this->pids.push_back(pid);
 		}
-
-		this->pids.push_back(pid);
 	}
 
 	if (!this->cflag) {
@@ -209,6 +210,7 @@ void NutellaServer::run() {
 		pid_t pid_stream = fork();
 
 		if (pid_stream == 0) {
+			this->pids.clear();		// the child has no children yet
 			if (vflag)
 				std::cout << "NutellaServer nstream child: Calling msockdestroy: " << std::endl;
 			// child, close the multicast ports
@@ -221,19 +223,19 @@ void NutellaServer::run() {
 
 			// deactivate the streamer, so it will only serve to generate response messages
 			this->nstream->deactivate();
-		}
 
-		while (1) {
-			handleQuery();
+			while (1) {
+				handleQuery();
 
-			// check to see if any pids have terminated
-			for (std::vector<pid_t>::iterator it = this->pids.begin(); it != this->pids.end();) {
-				if (waitpid(*it, NULL, WNOHANG) > 0) {
-					// the process whose pid we checked exited
-					it = this->pids.erase(it);
-				} else {
-					// otherwise, increment the iterator
-					++it;
+				// check to see if any pids have terminated
+				for (std::vector<pid_t>::iterator it = this->pids.begin(); it != this->pids.end();) {
+					if (waitpid(*it, NULL, WNOHANG) > 0) {
+						// the process whose pid we checked exited
+						it = this->pids.erase(it);
+					} else {
+						// otherwise, increment the iterator
+						++it;
+					}
 				}
 			}
 		}
