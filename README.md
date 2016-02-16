@@ -16,7 +16,6 @@ Included Files and Folders:
 	log/					- empty directory for log files
 							- if using logging, the binary must be run from repository folder
 	movies/					- storage for 4 ASCII movie files
-		matrixlong.txt 		- matrix.txt, repeating 10 times for benchmarking
 		matrix.txt 			- an ASCII version of a scene from the Matrix 
 							- from http://www.justbewise.net/matrix.html?D0=10
 		starwars.txt 		- created by Christopher Tashjian
