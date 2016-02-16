@@ -63,7 +63,7 @@ void NutellaPlayer::run() {
 		}
 
 		if (this->frame_queue.size() > 0) {
-			// this->mp->printFrame(&(this->frame_queue));
+			this->mp->printFrame(&(this->frame_queue));
 		}
 	}
 
