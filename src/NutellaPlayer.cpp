@@ -121,13 +121,14 @@ void NutellaPlayer::receiveStream() {
 	bytes_read = recv(this->sock, buffer, BUFSIZE, MSG_DONTWAIT);
 
 	if (bytes_read > 0) {
-		if (this->vflag)
-			std::cout << "NutellaPlayer: Read " << bytes_read << " bytes" << std::endl;
 		// create a string, adding the leftovers from previous recv's
 		// that could not be parsed into frames
 		temp_buffer = partial_frame + std::string(buffer, bytes_read);
 		bytes_read += partial_frame.size();
 		partial_frame = "";
+
+		if (this->vflag)
+			std::cout << "NutellaPlayer: Read " << bytes_read << " bytes" << std::endl;
 
 		if (vflag) {
 			std::cout << "Temporary buffer:" << std::endl;
@@ -159,7 +160,7 @@ void NutellaPlayer::receiveStream() {
 			} else {
 				// there are no remaining end delimiters
 				// copy the remaining to partial_frame
-				this->partial_frame = std::string(temp_buffer, last_pos, end_pos);
+				this->partial_frame = std::string(temp_buffer, last_pos);
 				// if (this->vflag)
 				// 	std::cout << "NutellaPlayer: Frame incomplete" << std::endl;
 			}
