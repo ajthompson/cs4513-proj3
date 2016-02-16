@@ -149,7 +149,7 @@ void NutellaPlayer::receiveStream() {
 				this->frame_queue.push(temp_frame);
 
 				// update last_pos to omit 'end'
-				last_pos += 3;
+				last_pos = end_pos + 3;
 
 				if (this->vflag) {
 					std::cout << "NutellaPlayer: Finished frame" << std::endl;
