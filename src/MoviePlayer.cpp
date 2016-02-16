@@ -76,7 +76,6 @@ MoviePlayer::~MoviePlayer() {
 		std::cout << "Prepping terminal" << std::endl;
 
 	// clear the terminal and any set attributes
-	this->prepTerminal();
 	this->clearAttributes();
 }
 
@@ -137,7 +136,7 @@ void MoviePlayer::clearAttributes() {
 
 	MoviePlayer::refresh_display = 0;
 
-	std::cout << "\x1B[0m" << std::flush;
+	std::cout << "\x1B[2J\x1B[1;1H\x1B[0m" << std::flush;
 }
 
 /**
