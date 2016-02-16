@@ -103,11 +103,14 @@ Usage:
 
 		nutelle - P2P ASCII movie streaming
 
-		nutella [{-p | --passive} | {-c | --client-only}] [-t | --timed] [-d | --directory <directory>] [-v | --verbose] [-f | --fps] [-s | --show-fps] [-h | --help]
-			-p Run in passive mode and do not act as a client 	(1)
-			-c Run in client only mode							(2)
+		nutella [{-p | --passive} | {-c | --client-only}] 
+				[-t | --timed] [-d | --directory <directory>] 
+				[-v | --verbose] [-f | --fps] [-s | --show-fps] 
+				[-h | --help]
+			-p Run in passive mode and do not act as a client (1)
+			-c Run in client only mode						  (2)
 			-t Log timing information to the ./log folder
-			-d Specify the movie directory						(2)
+			-d Specify the movie directory					  (2)
 			-v Print verbose output
 			-f Specify the framerate in frames per second
 			-s Show FPS during client playback
