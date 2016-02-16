@@ -99,6 +99,25 @@ MoviePlayer *MoviePlayer::makeMoviePlayer(unsigned long fps, int show_fps, int t
  * clearing the screen and moving the cursor to the top left
  */
 void MoviePlayer::prepTerminal() {
+	struct itimerval timer;
+	unsigned long secs = 0, usecs = 0;
+
+	// calculate the interval to achieve the given fps
+	if (fps <= 1) {
+		secs = 1;
+	} else {
+		usecs = fps / 1000000;
+	}
+
+	// configure the timer
+	timer.it_value.tv_sec = secs;
+	timer.it_value.tv_usec = usecs;
+	timer.it_interval.tv_sec = secs;
+	timer.it_interval.tv_usec = usecs;
+
+	setitimer(ITIMER_REAL, &timer, NULL);
+	MoviePlayer::refresh_display = 1;
+
 	std::cout << "\x1B[2J\x1B[1;1H" << std::flush;
 }
 
@@ -106,6 +125,18 @@ void MoviePlayer::prepTerminal() {
  * Clear any set ANSI attributes
  */
 void MoviePlayer::clearAttributes() {
+	struct itimerval timer;
+
+	// disable the timer
+	timer.it_value.tv_sec = 0;
+	timer.it_value.tv_usec = 0;
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_usec = 0;
+
+	setitimer(ITIMER_REAL, &timer, NULL);
+
+	MoviePlayer::refresh_display = 0;
+
 	std::cout << "\x1B[0m" << std::flush;
 }
 
