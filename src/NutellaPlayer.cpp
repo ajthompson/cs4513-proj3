@@ -136,12 +136,14 @@ void NutellaPlayer::receiveStream() {
 		}
 
 		// find any end delimiters
-		while (end_pos != std::string::npos) {
-			end_pos = temp_buffer.find("end", last_pos);
-			if (this->vflag)
-				std::cout << "NutellaPlayer: Found 'end' at " << end_pos << std::endl;
+		while ((end_pos = temp_buffer.find("end", last_pos)) != std::string::npos) {
 
 			if (end_pos != std::string::npos) {
+				if (this->vflag) {
+					std::cout << "NutellaPlayer: Found 'end' at " << end_pos << std::endl;
+					std::cout << "\tlast_pos: " << last_pos << std::endl;
+					std::cout << "\tend_pos:  " << end_pos << std::endl;
+				}
 				// create a new substring from last_pos to the beginning of 'end'
 				temp_frame = std::string(temp_buffer, last_pos, end_pos);
 
