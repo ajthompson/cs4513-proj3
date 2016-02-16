@@ -110,6 +110,9 @@ void NutellaSearch::run() {
 			break;
 		}
 
+		// add .txt
+		title += ".txt";
+
 		// multicast the title
 		if (msend(this->q_msock, title.c_str(), title.size()) == -1) {
 			perror("msend()");

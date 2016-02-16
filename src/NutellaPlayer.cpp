@@ -156,6 +156,13 @@ void NutellaPlayer::receiveStream() {
 
 			end_pos = temp_buffer.find("end\n", last_pos);
 
+			// if the movie player is ready to display another frame
+			// and we have one ready, put everything into the partial frame storage
+			// so we don't impact the framerate too much
+			if (MoviePlayer::refresh_display && this->frame_queue.size > 0) {
+				end_pos = std::string::npos;
+			}
+
 			if (end_pos != std::string::npos) {
 				if (this->vflag) {
 					std::cout << "NutellaPlayer: Found 'end' at " << end_pos << std::endl;
